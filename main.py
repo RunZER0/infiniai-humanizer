@@ -1,7 +1,3 @@
-# Rewriting the entire main.py with the new human flaw injection function,
-# ensuring site formatting and layout remain unchanged.
-
-full_main_py = """
 import streamlit as st
 import openai
 import random
@@ -71,11 +67,11 @@ def weaken_academic_tone(text):
         "in utero": "inside the womb"
     }
     for key, val in replacements.items():
-        text = re.sub(rf'\\b{re.escape(key)}\\b', val, text, flags=re.IGNORECASE)
+        text = re.sub(rf'\b{re.escape(key)}\b', val, text, flags=re.IGNORECASE)
     return text
 
 def break_and_variabilize(text):
-    sentences = re.split(r'(?<=[.!?])\\s+', text)
+    sentences = re.split(r'(?<=[.!?])\s+', text)
     modified = []
     for sentence in sentences:
         if sentence:
@@ -84,7 +80,7 @@ def break_and_variabilize(text):
             if random.random() < 0.25:
                 sentence = sentence.replace(" in ", " inside ")
             if random.random() < 0.2:
-                sentence = re.sub(r'\\bis\\b', 'turns out to be', sentence)
+                sentence = re.sub(r'\bis\b', 'turns out to be', sentence)
             if random.random() < 0.15:
                 sentence = "Actually, " + sentence
             modified.append(sentence)
@@ -101,7 +97,7 @@ def inject_human_flaws(text):
         ("it suggests", "it sort of suggests"),
         ("in conclusion", "so, in a way")
     ]
-    lines = re.split(r'(?<=[.!?])\\s+', text)
+    lines = re.split(r'(?<=[.!?])\s+', text)
     new_lines = []
     for line in lines:
         if not line.strip():
@@ -112,7 +108,7 @@ def inject_human_flaws(text):
             if original in line and random.random() < 0.5:
                 line = line.replace(original, flawed)
         if random.random() < 0.2:
-            line = re.sub(r'\\b(the|a|an)\\b ', '', line, flags=re.IGNORECASE)
+            line = re.sub(r'\b(the|a|an)\b ', '', line, flags=re.IGNORECASE)
         new_lines.append(line)
     return " ".join(new_lines)
 
@@ -148,8 +144,8 @@ def humanize_text(text):
     )
 
     full_prompt = (
-        f"{system_prompt}\\n\\n"
-        f"{altered_text}\\n\\n"
+        f"{system_prompt}\n\n"
+        f"{altered_text}\n\n"
         "Now rewrite this as if you're explaining it in your own words, based on memory. "
         "Use simple, varied sentence lengths. Be accurate, but not polished. "
         f"{citation_instruction}"
@@ -168,7 +164,7 @@ def humanize_text(text):
     return response.choices[0].message.content.strip()
 
 # === UI / Layout ===
-st.markdown(\"\"\"
+st.markdown("""
     <style>
     .stApp {
         background-color: #0d0d0d;
@@ -209,7 +205,7 @@ st.markdown(\"\"\"
         justify-content: center;
     }
     </style>
-\"\"\", unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Humanize the text. Make it sound like a person wrote it, not a program, and beat all AI detectors.</p></div>', unsafe_allow_html=True)
 
@@ -243,7 +239,7 @@ if st.session_state.human_output:
 def show_footer():
     st.markdown("---")
     st.markdown("#### 🌟 InfiniAi-Humanizer v1.4")
-    st.markdown(\"\"\"
+    st.markdown("""
     InfiniAi-Humanizer rewrites AI-sounding text into believable, natural-sounding content.  
     Built to pass AI detectors with human-style pacing, simplified structure, and citation-safe memory-based rephrasing.
 
@@ -252,10 +248,9 @@ def show_footer():
     - 👩 “I clicked the button and boom! It was better.”  
     - 🧑‍🏫 “Now my students sound way less like robots. I love it.”  
     - 👶 “This thing is smart. And fun. Like a magic helper.”  
-    \"\"\")
+    """)
 
 if not st.session_state.human_output:
     show_footer()
 else:
     show_footer()
-"""
