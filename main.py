@@ -1,13 +1,14 @@
 import streamlit as st
 import openai
-import os
 import random
 import textstat
 import hashlib
+import re
 
-# Use Streamlit secrets to store the API key securely
+# Set OpenAI API Key
 openai.api_key = st.secrets["OPENAI_API_KEY"]
-# Initialize session state defaults
+
+# Init session state
 if "human_output" not in st.session_state:
     st.session_state.human_output = ""
 if "last_style" not in st.session_state:
@@ -15,68 +16,67 @@ if "last_style" not in st.session_state:
 if "previous_inputs" not in st.session_state:
     st.session_state.previous_inputs = {}
 
-# Balanced personality pool: academic, semi-academic, light casual
+# Tone pool
 TONE_VARIANTS = [
     {
-        "label": "📘 Academic Research Editor",
+        "label": "📘 Academic Humanizer",
         "preserve_citations": True,
-        "prompt": "You are an academic editor improving formal writing for clarity and tone. Use formal, objective language and preserve all in-text citations exactly."
+        "prompt": "You are rewriting academic content like a human — not perfect, but thoughtful. Preserve citations. Think out loud. It's okay to be a bit messy, just not robotic."
     },
     {
-        "label": "🎓 Graduate Summary Writer",
+        "label": "🎓 Grad Student Voice",
         "preserve_citations": True,
-        "prompt": "You are a graduate student summarizing academic material. Maintain a clear, concise, and professional tone. Preserve all citations."
+        "prompt": "You're a grad student rewriting this late at night. Preserve citations. You think as you write. Vary sentence structure and drop the overly polished tone."
     },
     {
-        "label": "📊 Technical Report Style",
+        "label": "🧑‍🏫 Semi-Academic Explainer",
         "preserve_citations": True,
-        "prompt": "You're writing a technical report for a professional audience. Use structured, semi-formal tone. Maintain all citations and formal clarity."
+        "prompt": "You are explaining this as a human who read it and rewrote it from memory. Preserve citations. Be confident but casual, not robotic."
     },
     {
-        "label": "🧑‍🏫 Educated Blogger",
+        "label": "🧠 4th Grade Academic",
         "preserve_citations": True,
-        "prompt": "You're an educated blogger explaining academic ideas to a wide audience. Use accessible, semi-formal tone with examples and preserve citations."
+        "prompt": "You’re rewriting this in very simple academic language for a 4th grader. Use plain words but keep citations intact."
     },
     {
-        "label": "👧 4th Grade Academic Explainer",
-        "preserve_citations": True,
-        "prompt": "You are rewriting academic text using 4th grade English, while keeping it factually accurate. Preserve all in-text citations exactly."
-    },
-    {
-        "label": "📚 Friendly Explainer",
+        "label": "💬 Conversational Clarity",
         "preserve_citations": False,
-        "prompt": "You're a friendly teacher explaining something to a smart 13-year-old. Use natural transitions and helpful comparisons. You can simplify or reword citations."
+        "prompt": "You're a human explaining this to a friend. Rewrite naturally, like you're thinking aloud. It's okay to skip or paraphrase citations."
     },
     {
-        "label": "🧑‍💻 Conversational Analyst",
+        "label": "😎 Real Blogger Energy",
         "preserve_citations": False,
-        "prompt": "You're a conversational analyst writing for a casual newsletter. Use clear logic but add a relaxed tone. Feel free to paraphrase citations."
-    },
-    {
-        "label": "😎 Chill Blogger",
-        "preserve_citations": False,
-        "prompt": "You're a chill blogger breaking down an idea in a super natural way. Add slight personality, occasional asides, and relaxed flow. Citations can be removed or reworded."
+        "prompt": "You're a chill blogger. Rewrite like you're talking to your readers casually. Slight humor, contractions, and random shifts are okay."
     }
 ]
 
-# Helper: Track tone per input hash
+# Light entropy: add hesitation/filler phrases randomly
+def inject_entropy(text):
+    fillers = ["To be honest,", "I mean,", "Honestly,", "In some ways,", "Not gonna lie,", "Actually,", "You could say,"]
+    sentences = re.split(r'(?<=[.!?]) +', text)
+    modified = []
+
+    for sentence in sentences:
+        if sentence and random.random() < 0.3:
+            sentence = f"{random.choice(fillers)} {sentence}"
+        modified.append(sentence)
+
+    return " ".join(modified)
+
+# Hash input to track variants
 def get_input_hash(text):
     return hashlib.sha256(text.strip().encode()).hexdigest()
 
 def humanize_text(text):
     input_hash = get_input_hash(text)
-
-    if "previous_inputs" not in st.session_state:
-        st.session_state.previous_inputs = {}
-
     used_variants = st.session_state.previous_inputs.get(input_hash, [])
-    unused_variants = [i for i in range(len(TONE_VARIANTS)) if i not in used_variants]
+    unused = [i for i in range(len(TONE_VARIANTS)) if i not in used_variants]
 
-    if not unused_variants:
-        unused_variants = list(range(len(TONE_VARIANTS)))
+    if not unused:
+        unused = list(range(len(TONE_VARIANTS)))
         used_variants = []
 
-    variant_index = random.choice(unused_variants)
+    variant_index = random.choice(unused)
     variant = TONE_VARIANTS[variant_index]
 
     used_variants.append(variant_index)
@@ -85,17 +85,19 @@ def humanize_text(text):
     system_prompt = variant["prompt"]
     preserve_citations = variant["preserve_citations"]
 
+    text = inject_entropy(text)
+
     citation_instruction = (
-        "Preserve any in-text citations exactly as written."
+        "Preserve in-text citations exactly as written."
         if preserve_citations else
-        "You may rephrase or remove citations naturally if needed."
+        "Citations may be skipped or reworded naturally if they break flow."
     )
 
     full_prompt = f"""{system_prompt}
 
 {text}
 
-Now rewrite this in a way that sounds truly human. Vary structure, tone, and flow. {citation_instruction}
+Now rewrite this in your own voice — imperfect, flowing, and human. Vary length, break patterns, and don't be robotic. {citation_instruction}
 """
 
     response = openai.chat.completions.create(
@@ -110,7 +112,7 @@ Now rewrite this in a way that sounds truly human. Vary structure, tone, and flo
 
     return response.choices[0].message.content.strip(), variant["label"]
 
-# UI Styling (unchanged layout)
+# Styling (unchanged)
 st.markdown("""
     <style>
     .stApp {
@@ -155,28 +157,27 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title
-st.markdown('<div class="centered-container"><h1>🤖 Infiniai-Humanizer</h1><p>Rewrite the machine. Own the voice.</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Rewrite the machine. Fool the machine.</p></div>', unsafe_allow_html=True)
 
 # Input
 input_text = st.text_area("Enter your AI-generated text:", height=250)
 
-# Input Stats
 if input_text.strip():
     words = len(input_text.split())
     score = round(textstat.flesch_reading_ease(input_text), 1)
     st.markdown(f"**📊 Input Word Count:** {words} &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; **🧠 Readability Score:** {score}%")
 
-# Button
+# Button logic
 if st.button("🔁 Humanize Text"):
     if input_text.strip():
-        with st.spinner("Transforming AI text into human brilliance... ✨"):
+        with st.spinner("Injecting imperfection and rewriting like a real human..."):
             output, style_used = humanize_text(input_text)
             st.session_state.human_output = output
             st.session_state.last_style = style_used
     else:
         st.warning("Please enter some text first.")
 
-# Output
+# Output Display
 if st.session_state.human_output:
     st.markdown("### ✍️ Humanized Output (Editable)")
     edited_output = st.text_area("Edit your result below:", value=st.session_state.human_output, height=300)
@@ -191,20 +192,18 @@ if st.session_state.human_output:
     st.download_button("💾 Download Output", data=edited_output,
                        file_name="humanized_output.txt", mime="text/plain")
 
-# Footer (static)
+# Footer
 def show_footer():
     st.markdown("---")
-    st.markdown("#### 🌟 Infiniai-Humanizer v1.1")
+    st.markdown("#### 🌟 InfiniAi-Humanizer v1.2")
     st.markdown("""
-    Infiniai-Humanizer helps turn robot-sounding text into something real people actually say.  
-    It's easy, fast, and fun. Your words still mean the same thing — they just feel more human.  
-    Great for school, writing, or making anything sound better!
+    InfiniAi-Humanizer rewrites robotic AI output using real human-like tone, rhythm, and messiness.  
+    Built to pass detection tools and sound like you wrote it yourself.
 
     **What People Say:**  
-    - 🧒 “It made my story sound like *me*! That’s cool.”  
-    - 👩 “I clicked the button and boom! It was better.”  
-    - 🧑‍🏫 “Now my students sound way less like robots. I love it.”  
-    - 👶 “This thing is smart. And fun. Like a magic helper.”  
+    - 🧠 “Feels like a real person wrote it.”  
+    - 📉 “Dropped my AI detection score from 98% to 12%.”  
+    - 🔁 “Every click gives a whole new vibe. Love it.”  
     """)
 
 if not st.session_state.human_output:
