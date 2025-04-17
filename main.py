@@ -3,25 +3,94 @@ import openai
 import os
 import random
 import textstat
+import hashlib
 
-# Use Streamlit Secrets for API Key (secure for Streamlit Cloud)
+# Set OpenAI key (via Streamlit secrets)
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-# Internal tone variants (used silently)
+# Distinct personality pool
 TONE_VARIANTS = [
-    "You are a sharp, witty writer with a casual, confident tone. Add variation, emotion, and mild unpredictability.",
-    "You are a human editor rewriting text for clarity and believability. Add subtle imperfection and voice.",
-    "You write like someone explaining things to a friend. Add questions, hesitations, and slight humor.",
-    "You are a thoughtful thinker reflecting out loud. Let the flow wander a little, keep it natural.",
+    {
+        "label": "📚 Formal + Academic",
+        "preserve_citations": True,
+        "prompt": "You are an academic editor rewriting text for clarity and precision. Maintain in-text citations and use slightly formal tone. Vary sentence structure but keep professional polish."
+    },
+    {
+        "label": "🧑‍🎤 Sarcastic Blogger",
+        "preserve_citations": False,
+        "prompt": "You are a sarcastic blogger with a dry sense of humor. Rewrite with casual phrasing, side comments, and occasional snark. Let it flow like a rant but still make sense."
+    },
+    {
+        "label": "👶 Parent Explaining to a Kid",
+        "preserve_citations": False,
+        "prompt": "You’re a patient parent explaining this to a curious kid. Keep it simple, clear, and add playful tone. Avoid jargon. Relate to everyday things."
+    },
+    {
+        "label": "🧑‍🎓 Sleep-Deprived Student at 2AM",
+        "preserve_citations": False,
+        "prompt": "You're a student finishing an assignment at 2AM. Let the thoughts wander a bit. Add mild rambling, hesitation, and very human flow — like someone just trying to make it readable."
+    },
+    {
+        "label": "🎮 Reddit Forum Veteran",
+        "preserve_citations": False,
+        "prompt": "You're a casual forum veteran writing a reply post. Make it a mix of explanation, light rant, and informal tone. Add personal takes or anecdotes when relevant."
+    }
 ]
 
-# Initialize session state
-if "tone_index" not in st.session_state:
-    st.session_state.tone_index = 0
-if "human_output" not in st.session_state:
-    st.session_state.human_output = ""
+# Hashing input to track style usage per input
+def get_input_hash(text):
+    return hashlib.sha256(text.strip().encode()).hexdigest()
 
-# Custom CSS (dark neon + centered layout)
+# Enhanced humanize engine
+def humanize_text(text):
+    input_hash = get_input_hash(text)
+
+    if "previous_inputs" not in st.session_state:
+        st.session_state.previous_inputs = {}
+
+    used_variants = st.session_state.previous_inputs.get(input_hash, [])
+
+    unused_variants = [i for i in range(len(TONE_VARIANTS)) if i not in used_variants]
+
+    if not unused_variants:
+        unused_variants = list(range(len(TONE_VARIANTS)))
+        used_variants = []
+
+    variant_index = random.choice(unused_variants)
+    variant = TONE_VARIANTS[variant_index]
+
+    used_variants.append(variant_index)
+    st.session_state.previous_inputs[input_hash] = used_variants
+
+    system_prompt = variant["prompt"]
+    preserve_citations = variant["preserve_citations"]
+
+    citation_instruction = (
+        "Preserve any in-text citations exactly as written."
+        if preserve_citations else
+        "Feel free to remove or rephrase citations naturally."
+    )
+
+    full_prompt = f"""{system_prompt}
+
+{text}
+
+Now rewrite this with a natural human tone. Make it sound real, not robotic. {citation_instruction}
+"""
+
+    response = openai.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": full_prompt}
+        ],
+        temperature=0.9,
+        max_tokens=1500
+    )
+
+    return response.choices[0].message.content.strip(), variant["label"]
+
+# Custom CSS (unchanged layout)
 st.markdown("""
     <style>
     .stApp {
@@ -68,55 +137,23 @@ st.markdown("""
 # App Title
 st.markdown('<div class="centered-container"><h1>🤖 Infiniai-Humanizer</h1><p>Rewrite the machine. Own the voice.</p></div>', unsafe_allow_html=True)
 
-# Input Area
+# Input Text Area
 input_text = st.text_area("Enter your AI-generated text:", height=250)
 
-# Show input stats if text exists
 if input_text.strip():
     words = len(input_text.split())
     score = round(textstat.flesch_reading_ease(input_text), 1)
     st.markdown(f"**📊 Input Word Count:** {words} &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; **🧠 Readability Score:** {score}%")
 
-# Rewrite function (new OpenAI API)
-def humanize_text(text, preserve_citations=True):
-    tone_prompt = TONE_VARIANTS[st.session_state.tone_index]
-    st.session_state.tone_index = (st.session_state.tone_index + 1) % len(TONE_VARIANTS)
-
-    citation_instruction = (
-        "Preserve any in-text citations exactly as written."
-        if preserve_citations else
-        "Remove or rephrase citations naturally if needed."
-    )
-
-    full_prompt = f"""{tone_prompt}
-
-{text}
-
-Now rewrite this in a natural human tone. Vary structure, avoid robotic patterns. {citation_instruction}
-"""
-
-    response = openai.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": tone_prompt},
-            {"role": "user", "content": full_prompt}
-        ],
-        temperature=0.9,
-        max_tokens=1500
-    )
-
-    return response.choices[0].message.content.strip()
-
-# Humanize Button
 if st.button("🔁 Humanize Text"):
     if input_text.strip():
         with st.spinner("Transforming AI text into human brilliance... ✨"):
-            output = humanize_text(input_text)
+            output, style_used = humanize_text(input_text)
             st.session_state.human_output = output
+            st.session_state.last_style = style_used
     else:
         st.warning("Please enter some text first.")
 
-# Output Display if available
 if st.session_state.human_output:
     st.markdown("### ✍️ Humanized Output (Editable)")
     edited_output = st.text_area("Edit your result below:", value=st.session_state.human_output, height=300)
@@ -126,10 +163,12 @@ if st.session_state.human_output:
     score = round(textstat.flesch_reading_ease(edited_output), 1)
     st.markdown(f"**📊 Output Word Count:** {words} &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; **🧠 Readability Score:** {score}%")
 
+    st.success(f"Writing Style Used: {st.session_state.last_style}")
+
     st.download_button("💾 Download Output", data=edited_output,
                        file_name="humanized_output.txt", mime="text/plain")
 
-# Footer Section (always shown, moves below output if it exists)
+# Footer stays in place (layout untouched)
 def show_footer():
     st.markdown("---")
     st.markdown("#### 🌟 Infiniai-Humanizer v1.1")
@@ -145,7 +184,6 @@ def show_footer():
     - 👶 “This thing is smart. And fun. Like a magic helper.”  
     """)
 
-# Dynamic footer placement
 if not st.session_state.human_output:
     show_footer()
 else:
