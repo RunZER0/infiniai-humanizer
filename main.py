@@ -1,6 +1,7 @@
-# Fix the unterminated string literal issue and re-write the main.py properly
+# Rewriting the entire main.py with the new human flaw injection function,
+# ensuring site formatting and layout remain unchanged.
 
-fixed_main_py = """
+full_main_py = """
 import streamlit as st
 import openai
 import random
@@ -89,6 +90,32 @@ def break_and_variabilize(text):
             modified.append(sentence)
     return " ".join(modified)
 
+def inject_human_flaws(text):
+    filler_phrases = [
+        "in a way", "kind of", "basically", "to be clear", "actually", 
+        "from what I understand", "this means", "sort of"
+    ]
+    clarifiers = [
+        ("which means", "which basically means"),
+        ("this shows", "this kind of shows"),
+        ("it suggests", "it sort of suggests"),
+        ("in conclusion", "so, in a way")
+    ]
+    lines = re.split(r'(?<=[.!?])\\s+', text)
+    new_lines = []
+    for line in lines:
+        if not line.strip():
+            continue
+        if random.random() < 0.25:
+            line = f"{random.choice(filler_phrases).capitalize()}, {line}"
+        for original, flawed in clarifiers:
+            if original in line and random.random() < 0.5:
+                line = line.replace(original, flawed)
+        if random.random() < 0.2:
+            line = re.sub(r'\\b(the|a|an)\\b ', '', line, flags=re.IGNORECASE)
+        new_lines.append(line)
+    return " ".join(new_lines)
+
 def get_input_hash(text):
     return hashlib.sha256(text.strip().encode()).hexdigest()
 
@@ -112,6 +139,7 @@ def humanize_text(text):
 
     base_text = weaken_academic_tone(text)
     altered_text = break_and_variabilize(base_text)
+    altered_text = inject_human_flaws(altered_text)
 
     citation_instruction = (
         "Preserve all in-text citations exactly as written."
@@ -120,8 +148,8 @@ def humanize_text(text):
     )
 
     full_prompt = (
-        f"{system_prompt}\n\n"
-        f"{altered_text}\n\n"
+        f"{system_prompt}\\n\\n"
+        f"{altered_text}\\n\\n"
         "Now rewrite this as if you're explaining it in your own words, based on memory. "
         "Use simple, varied sentence lengths. Be accurate, but not polished. "
         f"{citation_instruction}"
