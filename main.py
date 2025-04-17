@@ -5,10 +5,9 @@ import textstat
 import hashlib
 import re
 
-# Set OpenAI API Key
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-# Init session state
+# Session state init
 if "human_output" not in st.session_state:
     st.session_state.human_output = ""
 if "last_style" not in st.session_state:
@@ -16,57 +15,58 @@ if "last_style" not in st.session_state:
 if "previous_inputs" not in st.session_state:
     st.session_state.previous_inputs = {}
 
-# Tone pool
+# Serious-tone personas only
 TONE_VARIANTS = [
     {
-        "label": "📘 Academic Humanizer",
+        "label": "📘 Academic Research Editor",
         "preserve_citations": True,
-        "prompt": "You are rewriting academic content like a human — not perfect, but thoughtful. Preserve citations. Think out loud. It's okay to be a bit messy, just not robotic."
+        "prompt": "You are an academic editor improving formal writing for clarity and tone. Use formal, objective language and preserve all in-text citations exactly."
     },
     {
         "label": "🎓 Grad Student Voice",
         "preserve_citations": True,
-        "prompt": "You're a grad student rewriting this late at night. Preserve citations. You think as you write. Vary sentence structure and drop the overly polished tone."
+        "prompt": "You're a grad student rewriting academic material under deadline pressure. Use clear, academic tone. Vary sentence structure. Preserve citations."
     },
     {
-        "label": "🧑‍🏫 Semi-Academic Explainer",
+        "label": "📊 Technical Report Writer",
         "preserve_citations": True,
-        "prompt": "You are explaining this as a human who read it and rewrote it from memory. Preserve citations. Be confident but casual, not robotic."
+        "prompt": "You're rewriting a technical report for professional readability. Be structured, formal, and precise. Preserve all citations exactly."
     },
     {
-        "label": "🧠 4th Grade Academic",
+        "label": "🧑‍🏫 Educated Blogger (Serious)",
         "preserve_citations": True,
-        "prompt": "You’re rewriting this in very simple academic language for a 4th grader. Use plain words but keep citations intact."
+        "prompt": "You're an informed blogger summarizing complex ideas seriously. Use semi-formal tone. Preserve all citations exactly."
     },
     {
-        "label": "💬 Conversational Clarity",
-        "preserve_citations": False,
-        "prompt": "You're a human explaining this to a friend. Rewrite naturally, like you're thinking aloud. It's okay to skip or paraphrase citations."
+        "label": "👧 Simplified Academic Style",
+        "preserve_citations": True,
+        "prompt": "You are simplifying academic text using plain English (4th-grade level). Preserve all citations exactly. Keep tone respectful and serious."
     },
     {
-        "label": "😎 Real Blogger Energy",
-        "preserve_citations": False,
-        "prompt": "You're a chill blogger. Rewrite like you're talking to your readers casually. Slight humor, contractions, and random shifts are okay."
+        "label": "🧠 Late-Night Student Rewrite",
+        "preserve_citations": True,
+        "prompt": "You're a student rewriting this at 2AM. Keep it thoughtful but slightly imperfect. Preserve citations. Let the tone feel like a real person under pressure."
     }
 ]
 
-# Light entropy: add hesitation/filler phrases randomly
+# Light human noise (entropy)
 def inject_entropy(text):
-    fillers = ["To be honest,", "I mean,", "Honestly,", "In some ways,", "Not gonna lie,", "Actually,", "You could say,"]
+    fillers = ["To be honest,", "In some ways,", "Interestingly,", "Actually,", "For what it's worth,", "That being said,"]
     sentences = re.split(r'(?<=[.!?]) +', text)
     modified = []
 
     for sentence in sentences:
-        if sentence and random.random() < 0.3:
+        if sentence and random.random() < 0.25:
             sentence = f"{random.choice(fillers)} {sentence}"
         modified.append(sentence)
 
     return " ".join(modified)
 
-# Hash input to track variants
+# Hashing logic
 def get_input_hash(text):
     return hashlib.sha256(text.strip().encode()).hexdigest()
 
+# Main rewrite engine
 def humanize_text(text):
     input_hash = get_input_hash(text)
     used_variants = st.session_state.previous_inputs.get(input_hash, [])
@@ -85,19 +85,19 @@ def humanize_text(text):
     system_prompt = variant["prompt"]
     preserve_citations = variant["preserve_citations"]
 
-    text = inject_entropy(text)
+    noisy_text = inject_entropy(text)
 
     citation_instruction = (
-        "Preserve in-text citations exactly as written."
+        "Preserve all in-text citations exactly as written."
         if preserve_citations else
-        "Citations may be skipped or reworded naturally if they break flow."
+        "You may reword or skip citations naturally if needed."
     )
 
     full_prompt = f"""{system_prompt}
 
-{text}
+{noisy_text}
 
-Now rewrite this in your own voice — imperfect, flowing, and human. Vary length, break patterns, and don't be robotic. {citation_instruction}
+Now rewrite this in a natural, believable human tone — suitable for academic settings. Vary sentence structure, break robotic rhythm. {citation_instruction}
 """
 
     response = openai.chat.completions.create(
@@ -106,13 +106,13 @@ Now rewrite this in your own voice — imperfect, flowing, and human. Vary lengt
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": full_prompt}
         ],
-        temperature=0.9,
+        temperature=0.85,
         max_tokens=1500
     )
 
     return response.choices[0].message.content.strip(), variant["label"]
 
-# Styling (unchanged)
+# === UI STAYS UNTOUCHED ===
 st.markdown("""
     <style>
     .stApp {
@@ -156,10 +156,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Title
 st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Rewrite the machine. Fool the machine.</p></div>', unsafe_allow_html=True)
 
-# Input
 input_text = st.text_area("Enter your AI-generated text:", height=250)
 
 if input_text.strip():
@@ -167,17 +165,15 @@ if input_text.strip():
     score = round(textstat.flesch_reading_ease(input_text), 1)
     st.markdown(f"**📊 Input Word Count:** {words} &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; **🧠 Readability Score:** {score}%")
 
-# Button logic
 if st.button("🔁 Humanize Text"):
     if input_text.strip():
-        with st.spinner("Injecting imperfection and rewriting like a real human..."):
+        with st.spinner("Rewriting with serious academic tone..."):
             output, style_used = humanize_text(input_text)
             st.session_state.human_output = output
             st.session_state.last_style = style_used
     else:
         st.warning("Please enter some text first.")
 
-# Output Display
 if st.session_state.human_output:
     st.markdown("### ✍️ Humanized Output (Editable)")
     edited_output = st.text_area("Edit your result below:", value=st.session_state.human_output, height=300)
@@ -192,18 +188,17 @@ if st.session_state.human_output:
     st.download_button("💾 Download Output", data=edited_output,
                        file_name="humanized_output.txt", mime="text/plain")
 
-# Footer
 def show_footer():
     st.markdown("---")
-    st.markdown("#### 🌟 InfiniAi-Humanizer v1.2")
+    st.markdown("#### 🌟 InfiniAi-Humanizer v1.3")
     st.markdown("""
-    InfiniAi-Humanizer rewrites robotic AI output using real human-like tone, rhythm, and messiness.  
-    Built to pass detection tools and sound like you wrote it yourself.
+    InfiniAi-Humanizer rewrites stiff AI text into natural, academic-sounding work.  
+    Built for serious use — student-safe, citation-aware, and detection-resistant.
 
-    **What People Say:**  
-    - 🧠 “Feels like a real person wrote it.”  
-    - 📉 “Dropped my AI detection score from 98% to 12%.”  
-    - 🔁 “Every click gives a whole new vibe. Love it.”  
+    **Feedback from testers:**  
+    - 🧑‍🎓 “Finally looks like *I* wrote it.”  
+    - 📉 “Detection scores dropped big time.”  
+    - 🧠 “Smart tone, not gimmicky. Feels legit.”  
     """)
 
 if not st.session_state.human_output:
