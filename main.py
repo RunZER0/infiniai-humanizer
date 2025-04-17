@@ -7,6 +7,13 @@ import hashlib
 
 # Use Streamlit secrets to store the API key securely
 openai.api_key = st.secrets["OPENAI_API_KEY"]
+# Initialize session state defaults
+if "human_output" not in st.session_state:
+    st.session_state.human_output = ""
+if "last_style" not in st.session_state:
+    st.session_state.last_style = ""
+if "previous_inputs" not in st.session_state:
+    st.session_state.previous_inputs = {}
 
 # Balanced personality pool: academic, semi-academic, light casual
 TONE_VARIANTS = [
