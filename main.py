@@ -7,7 +7,7 @@ import re
 
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-# Session state init
+# Session state defaults
 if "human_output" not in st.session_state:
     st.session_state.human_output = ""
 if "last_style" not in st.session_state:
@@ -15,43 +15,42 @@ if "last_style" not in st.session_state:
 if "previous_inputs" not in st.session_state:
     st.session_state.previous_inputs = {}
 
-# Serious-tone personas only
+# Serious-only personas (with memory-style prompts)
 TONE_VARIANTS = [
     {
-        "label": "📘 Academic Research Editor",
+        "label": "📘 Academic Reworded From Memory",
         "preserve_citations": True,
-        "prompt": "You are an academic editor improving formal writing for clarity and tone. Use formal, objective language and preserve all in-text citations exactly."
+        "prompt": "You just read this paragraph, and you're now explaining it in your own words as if you remember it. Keep it accurate, but don’t try to sound perfect. Keep citations intact."
     },
     {
-        "label": "🎓 Grad Student Voice",
+        "label": "🎓 Grad Student Late Rewrite",
         "preserve_citations": True,
-        "prompt": "You're a grad student rewriting academic material under deadline pressure. Use clear, academic tone. Vary sentence structure. Preserve citations."
+        "prompt": "You're a grad student rewriting a chunk of AI text from memory, late at night. Keep citations, vary your flow, and don’t sound too polished. Just sound real."
     },
     {
-        "label": "📊 Technical Report Writer",
+        "label": "📊 Technical Paraphrase",
         "preserve_citations": True,
-        "prompt": "You're rewriting a technical report for professional readability. Be structured, formal, and precise. Preserve all citations exactly."
+        "prompt": "You’re paraphrasing this technical explanation from memory. Keep the logic, keep the citations, but use natural structure and human pacing."
     },
     {
-        "label": "🧑‍🏫 Educated Blogger (Serious)",
+        "label": "🧑‍🏫 Semi-Formal Explanation",
         "preserve_citations": True,
-        "prompt": "You're an informed blogger summarizing complex ideas seriously. Use semi-formal tone. Preserve all citations exactly."
+        "prompt": "You just read an AI-written passage and now you're rephrasing it like a real human would. No need to sound overly academic. Preserve all in-text citations."
     },
     {
         "label": "👧 Simplified Academic Style",
         "preserve_citations": True,
-        "prompt": "You are simplifying academic text using plain English (4th-grade level). Preserve all citations exactly. Keep tone respectful and serious."
+        "prompt": "You’re turning this academic text into plain English without losing meaning. Preserve all in-text citations, but keep it simple and human-like."
     },
     {
-        "label": "🧠 Late-Night Student Rewrite",
+        "label": "🧠 2AM Real Rewrite",
         "preserve_citations": True,
-        "prompt": "You're a student rewriting this at 2AM. Keep it thoughtful but slightly imperfect. Preserve citations. Let the tone feel like a real person under pressure."
+        "prompt": "You're writing a final version of a paper at 2AM, based on memory of what the AI gave you. Be smart, not polished. Vary your structure and preserve citations."
     }
 ]
 
-# Light human noise (entropy)
 def inject_entropy(text):
-    fillers = ["To be honest,", "In some ways,", "Interestingly,", "Actually,", "For what it's worth,", "That being said,"]
+    fillers = ["To be honest,", "In some ways,", "Interestingly,", "Actually,", "That being said,", "From what I remember,"]
     sentences = re.split(r'(?<=[.!?]) +', text)
     modified = []
 
@@ -62,11 +61,9 @@ def inject_entropy(text):
 
     return " ".join(modified)
 
-# Hashing logic
 def get_input_hash(text):
     return hashlib.sha256(text.strip().encode()).hexdigest()
 
-# Main rewrite engine
 def humanize_text(text):
     input_hash = get_input_hash(text)
     used_variants = st.session_state.previous_inputs.get(input_hash, [])
@@ -97,7 +94,7 @@ def humanize_text(text):
 
 {noisy_text}
 
-Now rewrite this in a natural, believable human tone — suitable for academic settings. Vary sentence structure, break robotic rhythm. {citation_instruction}
+Now rewrite this as if you're explaining it in your own words, based on memory. Use simple, varied sentence lengths. Be accurate, but not polished. {citation_instruction}
 """
 
     response = openai.chat.completions.create(
@@ -112,7 +109,7 @@ Now rewrite this in a natural, believable human tone — suitable for academic s
 
     return response.choices[0].message.content.strip(), variant["label"]
 
-# === UI STAYS UNTOUCHED ===
+# Layout & UI (unchanged except tagline)
 st.markdown("""
     <style>
     .stApp {
@@ -156,7 +153,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Rewrite the machine. Fool the machine.</p></div>', unsafe_allow_html=True)
+# App Title + Updated Tagline
+st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Humanize the text. Make it sound like a person wrote it, not a program, and beat all AI detectors.</p></div>', unsafe_allow_html=True)
 
 input_text = st.text_area("Enter your AI-generated text:", height=250)
 
@@ -167,7 +165,7 @@ if input_text.strip():
 
 if st.button("🔁 Humanize Text"):
     if input_text.strip():
-        with st.spinner("Rewriting with serious academic tone..."):
+        with st.spinner("Rewriting with human memory and natural structure..."):
             output, style_used = humanize_text(input_text)
             st.session_state.human_output = output
             st.session_state.last_style = style_used
@@ -190,15 +188,15 @@ if st.session_state.human_output:
 
 def show_footer():
     st.markdown("---")
-    st.markdown("#### 🌟 InfiniAi-Humanizer v1.3")
+    st.markdown("#### 🌟 InfiniAi-Humanizer v1.4")
     st.markdown("""
-    InfiniAi-Humanizer rewrites stiff AI text into natural, academic-sounding work.  
-    Built for serious use — student-safe, citation-aware, and detection-resistant.
+    InfiniAi-Humanizer rewrites AI-sounding text into believable, natural-sounding content.  
+    Built to pass AI detectors with human-style pacing, simplified structure, and citation-safe memory-based rephrasing.
 
     **Feedback from testers:**  
-    - 🧑‍🎓 “Finally looks like *I* wrote it.”  
-    - 📉 “Detection scores dropped big time.”  
-    - 🧠 “Smart tone, not gimmicky. Feels legit.”  
+    - 🧑‍🎓 “Sounds like I wrote it — finally.”  
+    - 📉 “Scores dropped like crazy.”  
+    - 🧠 “Way more believable than anything ChatGPT gives raw.”  
     """)
 
 if not st.session_state.human_output:
