@@ -20,32 +20,55 @@ TONE_VARIANTS = [
     {
         "label": "📘 Academic Reworded From Memory",
         "preserve_citations": True,
-        "prompt": "You just read this paragraph, and you're now explaining it in your own words as if you remember it. Keep it accurate, but don’t try to sound perfect. Keep citations intact."
+        "prompt": (
+            "You just read this paragraph and now you're explaining it in your own words, from memory — not trying to be perfect, just accurate. "
+            "It should feel like a real person recalling what they understood, not reciting or copying. Don’t smooth out the rough edges; slight pauses, "
+            "varied structure, and natural transitions are good. Keep all citations exactly where they are."
+        )
     },
     {
         "label": "🎓 Grad Student Late Rewrite",
         "preserve_citations": True,
-        "prompt": "You're a grad student rewriting a chunk of AI text from memory, late at night. Keep citations, vary your flow, and don’t sound too polished. Just sound real."
+        "prompt": (
+            "You're a grad student rewriting a chunk of AI-generated text late at night. You’re tired, you get the gist, and you’re trying to make it sound human — "
+            "not polished, not stiff, just real. Let the structure shift, vary sentence length, and don’t obsess over perfect grammar. Just sound like someone doing their best "
+            "to rephrase what they remember. All in-text citations must stay exactly as they are."
+        )
     },
     {
         "label": "📊 Technical Paraphrase",
         "preserve_citations": True,
-        "prompt": "You’re paraphrasing this technical explanation from memory. Keep the logic, keep the citations, but use natural structure and human pacing."
+        "prompt": (
+            "You’re paraphrasing this technical explanation like a real person would after reading it once. Your job is to keep the technical accuracy and logic, "
+            "but shift the tone and rhythm so it doesn’t feel machine-written. Use a more natural structure and make it sound like a thoughtful human summary. "
+            "Keep all in-text citations exactly as they are."
+        )
     },
     {
         "label": "🧑‍🏫 Semi-Formal Explanation",
         "preserve_citations": True,
-        "prompt": "You just read an AI-written passage and now you're rephrasing it like a real human would. No need to sound overly academic. Preserve all in-text citations."
+        "prompt": (
+            "You’ve read an AI-written paragraph and now you're rephrasing it like a human would explain it — semi-formally, but without that stiff or robotic tone. "
+            "Aim for clarity and flow that sounds natural in real conversation or writing. Vary your pacing, use real-sounding phrasing, and don’t worry about perfection. "
+            "All citations must stay intact."
+        )
     },
     {
         "label": "👧 Simplified Academic Style",
         "preserve_citations": True,
-        "prompt": "You’re turning this academic text into plain English without losing meaning. Preserve all in-text citations, but keep it simple and human-like."
+        "prompt": (
+            "You’re turning an academic paragraph into more accessible, plain English — the kind of writing a human might use when trying to make something understandable "
+            "without dumbing it down. Avoid the mechanical feel of AI text. Focus on simplicity, rhythm, and meaning. Keep all in-text citations as they appear."
+        )
     },
     {
         "label": "🧠 2AM Real Rewrite",
         "preserve_citations": True,
-        "prompt": "You're writing a final version of a paper at 2AM, based on memory of what the AI gave you. Be smart, not polished. Vary your structure and preserve citations."
+        "prompt": (
+            "It's 2AM and you're rewriting an AI-generated section of your paper from memory. You remember the core ideas, but you're not trying to sound perfect — just real and intelligent. "
+            "Let your sentence structure breathe, vary your rhythm, and use natural word choices. You’re thinking while writing, not copy-pasting. "
+            "All citations need to remain in place, unchanged."
+        )
     }
 ]
 
