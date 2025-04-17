@@ -15,7 +15,7 @@ if "last_style" not in st.session_state:
 if "previous_inputs" not in st.session_state:
     st.session_state.previous_inputs = {}
 
-# Tone pool (academic-focused)
+# Serious-tone personas only
 TONE_VARIANTS = [
     {
         "label": "📘 Academic Reworded From Memory",
@@ -49,7 +49,6 @@ TONE_VARIANTS = [
     }
 ]
 
-# Light human entropy injection
 def inject_entropy(text):
     fillers = ["To be honest,", "In some ways,", "Interestingly,", "Actually,", "That being said,", "From what I remember,"]
     sentences = re.split(r'(?<=[.!?]) +', text)
@@ -62,7 +61,6 @@ def inject_entropy(text):
 
     return " ".join(modified)
 
-# Fingerprint the input for tracking style rotation
 def get_input_hash(text):
     return hashlib.sha256(text.strip().encode()).hexdigest()
 
@@ -111,7 +109,7 @@ Now rewrite this as if you're explaining it in your own words, based on memory. 
 
     return response.choices[0].message.content.strip()
 
-# UI Styling (unchanged)
+# === UI / Layout ===
 st.markdown("""
     <style>
     .stApp {
@@ -155,7 +153,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Title and tagline (updated)
+# Title & tagline (unchanged)
 st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Humanize the text. Make it sound like a person wrote it, not a program, and beat all AI detectors.</p></div>', unsafe_allow_html=True)
 
 input_text = st.text_area("Enter your AI-generated text:", height=250)
@@ -191,6 +189,12 @@ def show_footer():
     st.markdown("""
     InfiniAi-Humanizer rewrites AI-sounding text into believable, natural-sounding content.  
     Built to pass AI detectors with human-style pacing, simplified structure, and citation-safe memory-based rephrasing.
+
+    **What People Say:**  
+    - 🧒 “It made my story sound like *me*! That’s cool.”  
+    - 👩 “I clicked the button and boom! It was better.”  
+    - 🧑‍🏫 “Now my students sound way less like robots. I love it.”  
+    - 👶 “This thing is smart. And fun. Like a magic helper.”  
     """)
 
 if not st.session_state.human_output:
