@@ -7,7 +7,7 @@ import re
 
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-# Session state defaults
+# Session state setup
 if "human_output" not in st.session_state:
     st.session_state.human_output = ""
 if "last_style" not in st.session_state:
@@ -15,7 +15,7 @@ if "last_style" not in st.session_state:
 if "previous_inputs" not in st.session_state:
     st.session_state.previous_inputs = {}
 
-# Serious-only personas (with memory-style prompts)
+# Tone pool (academic-focused)
 TONE_VARIANTS = [
     {
         "label": "📘 Academic Reworded From Memory",
@@ -49,6 +49,7 @@ TONE_VARIANTS = [
     }
 ]
 
+# Light human entropy injection
 def inject_entropy(text):
     fillers = ["To be honest,", "In some ways,", "Interestingly,", "Actually,", "That being said,", "From what I remember,"]
     sentences = re.split(r'(?<=[.!?]) +', text)
@@ -61,6 +62,7 @@ def inject_entropy(text):
 
     return " ".join(modified)
 
+# Fingerprint the input for tracking style rotation
 def get_input_hash(text):
     return hashlib.sha256(text.strip().encode()).hexdigest()
 
@@ -107,9 +109,9 @@ Now rewrite this as if you're explaining it in your own words, based on memory. 
         max_tokens=1500
     )
 
-    return response.choices[0].message.content.strip(), variant["label"]
+    return response.choices[0].message.content.strip()
 
-# Layout & UI (unchanged except tagline)
+# UI Styling (unchanged)
 st.markdown("""
     <style>
     .stApp {
@@ -153,7 +155,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# App Title + Updated Tagline
+# Title and tagline (updated)
 st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Humanize the text. Make it sound like a person wrote it, not a program, and beat all AI detectors.</p></div>', unsafe_allow_html=True)
 
 input_text = st.text_area("Enter your AI-generated text:", height=250)
@@ -165,10 +167,9 @@ if input_text.strip():
 
 if st.button("🔁 Humanize Text"):
     if input_text.strip():
-        with st.spinner("Rewriting with human memory and natural structure..."):
-            output, style_used = humanize_text(input_text)
+        with st.spinner("Humanizing... Please wait."):
+            output = humanize_text(input_text)
             st.session_state.human_output = output
-            st.session_state.last_style = style_used
     else:
         st.warning("Please enter some text first.")
 
@@ -181,8 +182,6 @@ if st.session_state.human_output:
     score = round(textstat.flesch_reading_ease(edited_output), 1)
     st.markdown(f"**📊 Output Word Count:** {words} &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; **🧠 Readability Score:** {score}%")
 
-    st.success(f"Writing Style Used: {st.session_state.last_style}")
-
     st.download_button("💾 Download Output", data=edited_output,
                        file_name="humanized_output.txt", mime="text/plain")
 
@@ -192,11 +191,6 @@ def show_footer():
     st.markdown("""
     InfiniAi-Humanizer rewrites AI-sounding text into believable, natural-sounding content.  
     Built to pass AI detectors with human-style pacing, simplified structure, and citation-safe memory-based rephrasing.
-
-    **Feedback from testers:**  
-    - 🧑‍🎓 “Sounds like I wrote it — finally.”  
-    - 📉 “Scores dropped like crazy.”  
-    - 🧠 “Way more believable than anything ChatGPT gives raw.”  
     """)
 
 if not st.session_state.human_output:
