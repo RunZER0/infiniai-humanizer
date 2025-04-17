@@ -2,14 +2,12 @@ import streamlit as st
 import openai
 import os
 import random
-from dotenv import load_dotenv
 import textstat
 
-# Load API key
-load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Use Streamlit Secrets for API Key (secure for Streamlit Cloud)
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-# Internal tone prompts (cycled silently)
+# Internal tone variants (used silently)
 TONE_VARIANTS = [
     "You are a sharp, witty writer with a casual, confident tone. Add variation, emotion, and mild unpredictability.",
     "You are a human editor rewriting text for clarity and believability. Add subtle imperfection and voice.",
@@ -17,13 +15,13 @@ TONE_VARIANTS = [
     "You are a thoughtful thinker reflecting out loud. Let the flow wander a little, keep it natural.",
 ]
 
-# Session state
+# Initialize session state
 if "tone_index" not in st.session_state:
     st.session_state.tone_index = 0
 if "human_output" not in st.session_state:
     st.session_state.human_output = ""
 
-# Custom Styling
+# Custom CSS (dark neon + centered layout)
 st.markdown("""
     <style>
     .stApp {
@@ -73,13 +71,13 @@ st.markdown('<div class="centered-container"><h1>🤖 Infiniai-Humanizer</h1><p>
 # Input Area
 input_text = st.text_area("Enter your AI-generated text:", height=250)
 
-# Live stats for input
+# Show input stats if text exists
 if input_text.strip():
     words = len(input_text.split())
     score = round(textstat.flesch_reading_ease(input_text), 1)
     st.markdown(f"**📊 Input Word Count:** {words} &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; **🧠 Readability Score:** {score}%")
 
-# Rewrite Function
+# Rewrite function (new OpenAI API)
 def humanize_text(text, preserve_citations=True):
     tone_prompt = TONE_VARIANTS[st.session_state.tone_index]
     st.session_state.tone_index = (st.session_state.tone_index + 1) % len(TONE_VARIANTS)
@@ -97,7 +95,7 @@ def humanize_text(text, preserve_citations=True):
 Now rewrite this in a natural human tone. Vary structure, avoid robotic patterns. {citation_instruction}
 """
 
-    response = openai.ChatCompletion.create(
+    response = openai.chat.completions.create(
         model="gpt-4o",
         messages=[
             {"role": "system", "content": tone_prompt},
@@ -107,9 +105,9 @@ Now rewrite this in a natural human tone. Vary structure, avoid robotic patterns
         max_tokens=1500
     )
 
-    return response["choices"][0]["message"]["content"].strip()
+    return response.choices[0].message.content.strip()
 
-# Button
+# Humanize Button
 if st.button("🔁 Humanize Text"):
     if input_text.strip():
         with st.spinner("Transforming AI text into human brilliance... ✨"):
@@ -118,19 +116,20 @@ if st.button("🔁 Humanize Text"):
     else:
         st.warning("Please enter some text first.")
 
-# Show output if available
+# Output Display if available
 if st.session_state.human_output:
     st.markdown("### ✍️ Humanized Output (Editable)")
     edited_output = st.text_area("Edit your result below:", value=st.session_state.human_output, height=300)
     st.session_state.human_output = edited_output
 
-    words, score = len(edited_output.split()), round(textstat.flesch_reading_ease(edited_output), 1)
+    words = len(edited_output.split())
+    score = round(textstat.flesch_reading_ease(edited_output), 1)
     st.markdown(f"**📊 Output Word Count:** {words} &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; **🧠 Readability Score:** {score}%")
 
     st.download_button("💾 Download Output", data=edited_output,
                        file_name="humanized_output.txt", mime="text/plain")
 
-# Reusable: Version info + Reviews
+# Footer Section (always shown, moves below output if it exists)
 def show_footer():
     st.markdown("---")
     st.markdown("#### 🌟 Infiniai-Humanizer v1.1")
@@ -146,8 +145,8 @@ def show_footer():
     - 👶 “This thing is smart. And fun. Like a magic helper.”  
     """)
 
-# Smart Placement
+# Dynamic footer placement
 if not st.session_state.human_output:
-    show_footer()  # show immediately after the button (initial page load)
+    show_footer()
 else:
-    show_footer()  # push it below the output/download section
+    show_footer()
