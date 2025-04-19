@@ -66,7 +66,7 @@ def insert_redundancy(text):
     output = []
     for i, line in enumerate(lines):
         output.append(line)
-        if random.random() < 0.12 and len(line.split()) > 6:
+        if random.random() < 0.15 and len(line.split()) > 6:
             output.append(f"This shows that {line.strip().split()[0].lower()} is important.")
     return " ".join(output)
 
@@ -77,7 +77,7 @@ def inject_choppy_fragments(text):
     chop_limit = 0
     for s in sentences:
         result.append(s)
-        if random.random() < 0.15 and chop_limit < 2:
+        if random.random() < 0.15 and chop_limit < 4:
             result.append(random.choice(additions))
             chop_limit += 1
     return " ".join(result)
