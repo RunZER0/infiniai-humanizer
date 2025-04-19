@@ -14,7 +14,6 @@ if "previous_inputs" not in st.session_state:
 if "last_input_text" not in st.session_state:
     st.session_state.last_input_text = ""
 
-# === HUMANIZER v4.4 — Balanced Burst+Flow Engine ===
 PROMPT = (
     "Rewrite the following academic content like a real student would:"
     " Maintain a strong balance between punchy bursts and fluid, complete sentences."
@@ -116,21 +115,24 @@ textarea { background-color: #121212 !important; color: #ffffff !important; bord
 .stButton > button:hover { background-color: #00cccc; transform: scale(1.03); }
 .stDownloadButton button { background-color: #00ffff; color: black; font-weight: bold; border-radius: 5px; }
 .centered-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.features-grid { display: flex; justify-content: space-around; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #00ffff; }
+.feature, .comment { width: 30%; text-align: left; font-size: 14px; }
+.vertical-divider { border-left: 1px solid #00ffff; height: 100%; margin: 0 1rem; }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer v4.4</h1><p>Balanced bursts with flowing clarity. Undetectable. Sharp. Real.</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Enter your AI text here.</p></div>', unsafe_allow_html=True)
 
 input_text = st.text_area("Paste your AI-generated academic text below (Max: 10,000 characters):", height=280, max_chars=10000)
 
 if len(input_text) > 10000:
     st.warning("⚠️ Your input is over 10,000 characters. Only the first 10,000 characters will be used.")
-st.markdown(f"**✍️ Characters Entered:** {len(input_text)} / 10000  ")
+st.markdown(f"**✍️ Characters Entered:** {len(input_text)} / 10000")
 st.markdown(f"**📗 Word Count (est.):** {len(input_text.split())} words")
 
 if st.button("🔁 Humanize / Re-Humanize Text"):
     if input_text.strip():
-        trimmed_input = input_text[:10000]  # ✅ Enforce 10,000-character max
+        trimmed_input = input_text[:10000]
         with st.spinner("Humanizing academic text..."):
             output = humanize_text(trimmed_input)
             st.session_state.human_output = output
@@ -150,12 +152,30 @@ if st.session_state.human_output:
     st.download_button("💾 Download Output", data=edited_output, file_name="humanized_output.txt", mime="text/plain")
 
 st.markdown("---")
-st.markdown("#### 🧠 InfiniAi-Humanizer v4.4 — Balanced Burst+Flow Engine")
 st.markdown("""
-Features:
-- ✂️ Controlled sentence bursts (1–2 per paragraph)
-- 🧱 Realistic academic rhythm with occasional transitions
-- 📚 Maintains clarity, urgency, and citation safety
-- 🎯 Undetectable by major AI detectors
-- 🚫 Input capped at 10,000 characters for optimal output quality
-""")
+<div class='features-grid'>
+    <div class='feature'>
+        <strong>✍️ Natural Cadence:</strong><br>
+        Your words flow like a real student — no rigid AI rhythm.
+    </div>
+    <div class='vertical-divider'></div>
+    <div class='feature'>
+        <strong>🔁 Structured Variance:</strong><br>
+        Paragraphs balance bursts and full thoughts for human clarity.
+    </div>
+    <div class='vertical-divider'></div>
+    <div class='feature'>
+        <strong>📚 Academic Realism:</strong><br>
+        The tone mimics thoughtful effort, not perfect computation.
+    </div>
+</div>
+
+<div class='features-grid'>
+    <div class='comment'>
+        <em>"This actually sounds like I wrote it after a long study night."</em><br><strong>- Real user</strong>
+    </div>
+    <div class='comment'>
+        <em>"Passed the AI check with flying colors. And my professor said it felt authentic."</em><br><strong>- Another user</strong>
+    </div>
+</div>
+""", unsafe_allow_html=True)
