@@ -11,6 +11,8 @@ if "human_output" not in st.session_state:
     st.session_state.human_output = ""
 if "previous_inputs" not in st.session_state:
     st.session_state.previous_inputs = {}
+if "last_input_text" not in st.session_state:
+    st.session_state.last_input_text = ""
 
 # === HUMANIZER v4.2.1 — Precision Student Mode ===
 PROMPT = (
@@ -116,18 +118,19 @@ textarea { background-color: #121212 !important; color: #ffffff !important; bord
 
 st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer v4.2.1</h1><p>Natural rhythm, real voice, academic confidence.</p></div>', unsafe_allow_html=True)
 
-input_text = st.text_area("Paste your AI-generated academic text below:", height=250)
+input_text = st.text_area("Paste your AI-generated academic text below:", height=280)
 
 if input_text.strip():
     words = len(input_text.split())
     score = round(textstat.flesch_reading_ease(input_text), 1)
     st.markdown(f"**📊 Input Word Count:** {words} &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; **🧠 Readability Score:** {score}%")
 
-if st.button("🔁 Humanize Text") or (st.session_state.human_output and st.button("♻️ Re-Humanize Again")):
+if st.button("🔁 Humanize / Re-Humanize Text"):
     if input_text.strip():
-        with st.spinner("Finalizing balance of clarity and realism..."):
+        with st.spinner("Humanizing academic text..."):
             output = humanize_text(input_text)
             st.session_state.human_output = output
+            st.session_state.last_input_text = input_text
     else:
         st.warning("Please enter some text first.")
 
@@ -145,10 +148,9 @@ if st.session_state.human_output:
 st.markdown("---")
 st.markdown("#### 🧠 InfiniAi-Humanizer v4.2.1 — Precision Student Mode")
 st.markdown("""
-Upgraded with:
-- ⚖️ Clear-to-choppy balance
-- ✂️ Natural fragments + echo phrasing
-- 📚 Strict academic formatting
-- 🔐 Safe for detectors and human eyes alike
-Your writing. Refined. Human. Real.
+Features:
+- 🎯 Blended academic and human rhythm
+- ✂️ Controlled sentence fragments + emphasis
+- 📚 Preserved citations and formatting
+- 🔄 Smart one-button rehumanizing on demand
 """)
