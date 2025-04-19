@@ -121,14 +121,13 @@ textarea { background-color: #121212 !important; color: #ffffff !important; bord
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Enter your AI text here.</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Turn robotic AI text into real, natural, human-sounding writing.</p></div>', unsafe_allow_html=True)
 
 input_text = st.text_area("Paste your AI-generated academic text below (Max: 10,000 characters):", height=280, max_chars=10000)
 
 if len(input_text) > 10000:
     st.warning("⚠️ Your input is over 10,000 characters. Only the first 10,000 characters will be used.")
-st.markdown(f"**✍️ Characters Entered:** {len(input_text)} / 10000")
-st.markdown(f"**📗 Word Count (est.):** {len(input_text.split())} words")
+st.markdown(f"{len(input_text.split())} Words, {len(input_text)} Characters"):** {len(input_text.split())} words")
 
 if st.button("🔁 Humanize / Re-Humanize Text"):
     if input_text.strip():
@@ -151,6 +150,7 @@ if st.session_state.human_output:
 
     st.download_button("💾 Download Output", data=edited_output, file_name="humanized_output.txt", mime="text/plain")
 
+st.markdown("**Version 4.4**")
 st.markdown("---")
 st.markdown("""
 <div class='features-grid'>
