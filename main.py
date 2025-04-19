@@ -12,15 +12,14 @@ if "human_output" not in st.session_state:
 if "previous_inputs" not in st.session_state:
     st.session_state.previous_inputs = {}
 
-# === HUMANIZER v4.2 — SMOOTH-CHOPPY HYBRID ===
+# === HUMANIZER v4.2.1 — Enhanced Balance Edition ===
 PROMPT = (
     "Rewrite the following academic content like a real student would:"
-    " Combine short, choppy sentences with longer, explanatory ones."
-    " Each paragraph should start clearly and include at least one flowing sentence."
-    " Use 1–2 choppy statements per paragraph for emphasis—not rhythm."
-    " Avoid robotic tone. Use plain transitions, mild redundancy, and occasional fragments."
-    " Maintain an academic tone that balances clarity with realism."
-    " Do not add new ideas. Do not remove citations or names. Keep formatting."
+    " Maintain clarity and academic tone, but alternate between full, structured sentences and short, blunt ones."
+    " Use 1–2 choppy lines per paragraph to emphasize key ideas."
+    " Add mild imperfection: echo phrases, sentence fragments, and plain transitions like 'Still' or 'This matters.'"
+    " Do not over-smooth. Let it feel like real writing."
+    " Do not add new facts. Preserve all in-text citations and formatting."
 )
 
 SYNONYMS = {
@@ -72,6 +71,16 @@ def insert_redundancy(text):
             output.append(f"This shows that {line.strip().split()[0].lower()} is important.")
     return " ".join(output)
 
+def inject_choppy_fragments(text):
+    additions = ["This matters.", "Big risk.", "Still.", "Not always.", "A serious problem.", "That’s the issue.", "Even that’s not enough."]
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    result = []
+    for s in sentences:
+        result.append(s)
+        if random.random() < 0.18:
+            result.append(random.choice(additions))
+    return " ".join(result)
+
 def humanize_text(text):
     input_hash = hashlib.sha256(text.strip().encode()).hexdigest()
     if st.session_state.previous_inputs.get(input_hash):
@@ -80,8 +89,9 @@ def humanize_text(text):
     simplified = downgrade_vocab(text)
     structured = paragraph_balancer(simplified)
     echoed = insert_redundancy(structured)
+    chopped = inject_choppy_fragments(echoed)
 
-    full_prompt = f"{PROMPT}\n\n{echoed}\n\nRewrite this with the structure and tone described."
+    full_prompt = f"{PROMPT}\n\n{chopped}\n\nRewrite this with the tone and structure described above."
 
     response = openai.chat.completions.create(
         model="gpt-4o",
@@ -109,7 +119,7 @@ textarea { background-color: #121212 !important; color: #ffffff !important; bord
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer v4.2</h1><p>Balanced realism: academic tone meets natural rhythm.</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer v4.2.1</h1><p>Natural rhythm, real voice, academic confidence.</p></div>', unsafe_allow_html=True)
 
 input_text = st.text_area("Paste your AI-generated academic text below:", height=250)
 
@@ -120,7 +130,7 @@ if input_text.strip():
 
 if st.button("🔁 Humanize Text"):
     if input_text.strip():
-        with st.spinner("Balancing tone and structure..."):
+        with st.spinner("Finalizing balance of clarity and realism..."):
             output = humanize_text(input_text)
             st.session_state.human_output = output
     else:
@@ -138,12 +148,12 @@ if st.session_state.human_output:
     st.download_button("💾 Download Output", data=edited_output, file_name="humanized_output.txt", mime="text/plain")
 
 st.markdown("---")
-st.markdown("#### ✨ InfiniAi-Humanizer v4.2 – Smooth-Choppy Hybrid")
+st.markdown("#### 🧠 InfiniAi-Humanizer v4.2.1 — Precision Student Mode")
 st.markdown("""
-Designed to:
-- 🎯 Maintain academic clarity
-- ✂️ Sprinkle choppy phrases for realism
-- 📚 Keep citations intact
-- 🧠 Sound like a student, not a script
-Perfect balance. Real student voice.
+Upgraded with:
+- ⚖️ Clear-to-choppy balance
+- ✂️ Natural fragments + echo phrasing
+- 📚 Strict academic formatting
+- 🔐 Safe for detectors and human eyes alike
+Your writing. Refined. Human. Real.
 """)
