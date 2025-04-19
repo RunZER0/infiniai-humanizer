@@ -16,6 +16,9 @@ if "last_input_text" not in st.session_state:
 
 PROMPT = (
     "Rewrite the following academic content like a real student would:"
+    " Use an academic tone that sounds natural but human."
+    " Maintain a strong balance between punchy bursts and fluid, complete sentences."
+    "Rewrite the following academic content like a real student would:"
     " Maintain a strong balance between punchy bursts and fluid, complete sentences."
     " Use short fragments, sentence drops, and emphasis strategically—1 to 2 per paragraph only."
     " The rest should be longer, thought-out student-style sentences."
@@ -127,7 +130,7 @@ input_text = st.text_area("Paste your AI-generated academic text below (Max: 10,
 
 if len(input_text) > 10000:
     st.warning("⚠️ Your input is over 10,000 characters. Only the first 10,000 characters will be used.")
-st.markdown(f"**{len(input_text.split())} Words, {len(input_text)} Characters**")
+st.markdown(f"{len(input_text.split())} Words, {len(input_text)} Characters"):** {len(input_text.split())} words")
 
 if st.button("🔁 Humanize / Re-Humanize Text"):
     if input_text.strip():
