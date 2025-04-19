@@ -14,15 +14,14 @@ if "previous_inputs" not in st.session_state:
 if "last_input_text" not in st.session_state:
     st.session_state.last_input_text = ""
 
-# === HUMANIZER v4.4 — Balanced Burst+Flow Engine ===
+# === HUMANIZER v4.2.1 — Precision Student Mode ===
 PROMPT = (
     "Rewrite the following academic content like a real student would:"
-    " Maintain a strong balance between punchy bursts and fluid, complete sentences."
-    " Use short fragments, sentence drops, and emphasis strategically—1 to 2 per paragraph only."
-    " The rest should be longer, thought-out student-style sentences."
-    " Introduce mild imperfections and occasional transitions like 'Still,' or 'Even so,' to keep the flow natural."
-    " Avoid robotic rhythm or stacking too many short bursts."
-    " Preserve all citations, formatting, and academic structure."
+    " Maintain clarity and academic tone, but alternate between full, structured sentences and short, blunt ones."
+    " Use 1–2 choppy lines per paragraph to emphasize key ideas."
+    " Add mild imperfection: echo phrases, sentence fragments, and plain transitions like 'Still' or 'This matters.'"
+    " Do not over-smooth. Let it feel like real writing."
+    " Do not add new facts. Preserve all in-text citations and formatting."
 )
 
 SYNONYMS = {
@@ -54,13 +53,13 @@ def paragraph_balancer(text):
             s_clean = s.strip()
             if not s_clean:
                 continue
-            if len(s_clean.split()) > 18:
+            if len(s_clean.split()) > 20:
                 buffer.append(s_clean)
             elif chop_count < 2:
                 buffer.append(s_clean)
                 chop_count += 1
             else:
-                combined = s_clean + (" " + random.choice(["Still.", "This matters.", "Even so.", "That said.", "Which is why it matters."]) if random.random() < 0.3 else "")
+                combined = s_clean + (" " + random.choice(["Still.", "This matters.", "Even then."]) if random.random() < 0.3 else "")
                 buffer.append(combined)
         balanced.append(" ".join(buffer))
     return "\n\n".join(balanced)
@@ -70,20 +69,18 @@ def insert_redundancy(text):
     output = []
     for i, line in enumerate(lines):
         output.append(line)
-        if random.random() < 0.12 and len(line.split()) > 6:
+        if random.random() < 0.15 and len(line.split()) > 6:
             output.append(f"This shows that {line.strip().split()[0].lower()} is important.")
     return " ".join(output)
 
 def inject_choppy_fragments(text):
-    additions = ["This matters.", "Big risk.", "Still.", "Not always.", "A serious problem.", "That’s the issue.", "Even that’s not enough.", "Which is why it matters.", "Even so.", "That said."]
+    additions = ["This matters.", "Big risk.", "Still.", "Not always.", "A serious problem.", "That’s the issue.", "Even that’s not enough."]
     sentences = re.split(r'(?<=[.!?])\s+', text)
     result = []
-    chop_limit = 0
     for s in sentences:
         result.append(s)
-        if random.random() < 0.15 and chop_limit < 2:
+        if random.random() < 0.18:
             result.append(random.choice(additions))
-            chop_limit += 1
     return " ".join(result)
 
 def humanize_text(text):
@@ -119,7 +116,7 @@ textarea { background-color: #121212 !important; color: #ffffff !important; bord
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer v4.4</h1><p>Balanced bursts with flowing clarity. Undetectable. Sharp. Real.</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer v4.2.1</h1><p>Natural rhythm, real voice, academic confidence.</p></div>', unsafe_allow_html=True)
 
 input_text = st.text_area("Paste your AI-generated academic text below:", height=280)
 
@@ -149,11 +146,11 @@ if st.session_state.human_output:
     st.download_button("💾 Download Output", data=edited_output, file_name="humanized_output.txt", mime="text/plain")
 
 st.markdown("---")
-st.markdown("#### 🧠 InfiniAi-Humanizer v4.4 — Balanced Burst+Flow Engine")
+st.markdown("#### 🧠 InfiniAi-Humanizer v4.2.1 — Precision Student Mode")
 st.markdown("""
 Features:
-- ✂️ Controlled sentence bursts (1–2 per paragraph)
-- 🧱 Realistic academic rhythm with occasional transitions
-- 📚 Maintains clarity, urgency, and citation safety
-- 🎯 Undetectable by major AI detectors
+- 🎯 Blended academic and human rhythm
+- ✂️ Controlled sentence fragments + emphasis
+- 📚 Preserved citations and formatting
+- 🔄 Smart one-button rehumanizing on demand
 """)
