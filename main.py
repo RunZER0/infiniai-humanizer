@@ -14,14 +14,15 @@ if "previous_inputs" not in st.session_state:
 if "last_input_text" not in st.session_state:
     st.session_state.last_input_text = ""
 
-# === HUMANIZER v4.2.1 — Precision Student Mode ===
+# === HUMANIZER v4.3 — Burst-First with Transitional Rhythm ===
 PROMPT = (
     "Rewrite the following academic content like a real student would:"
-    " Maintain clarity and academic tone, but alternate between full, structured sentences and short, blunt ones."
-    " Use 1–2 choppy lines per paragraph to emphasize key ideas."
-    " Add mild imperfection: echo phrases, sentence fragments, and plain transitions like 'Still' or 'This matters.'"
-    " Do not over-smooth. Let it feel like real writing."
-    " Do not add new facts. Preserve all in-text citations and formatting."
+    " Keep short, choppy bursts—sentence fragments, echo phrases, and emphasis."
+    " These must remain central to the voice."
+    " However, to avoid robotic patterns, vary transitions lightly across paragraphs."
+    " Introduce occasional natural connectors like 'Even so,' or 'Which is why it matters.'"
+    " Do not over-smooth. The output should still sound imperfect, urgent, and human."
+    " Do not add or change factual content. Keep citations untouched."
 )
 
 SYNONYMS = {
@@ -59,7 +60,7 @@ def paragraph_balancer(text):
                 buffer.append(s_clean)
                 chop_count += 1
             else:
-                combined = s_clean + (" " + random.choice(["Still.", "This matters.", "Even then."]) if random.random() < 0.3 else "")
+                combined = s_clean + (" " + random.choice(["Still.", "This matters.", "Even then.", "Even so.", "That said.", "Which is why it matters."]) if random.random() < 0.3 else "")
                 buffer.append(combined)
         balanced.append(" ".join(buffer))
     return "\n\n".join(balanced)
@@ -74,7 +75,7 @@ def insert_redundancy(text):
     return " ".join(output)
 
 def inject_choppy_fragments(text):
-    additions = ["This matters.", "Big risk.", "Still.", "Not always.", "A serious problem.", "That’s the issue.", "Even that’s not enough."]
+    additions = ["This matters.", "Big risk.", "Still.", "Not always.", "A serious problem.", "That’s the issue.", "Even that’s not enough.", "Which is why it matters.", "Even so.", "That said."]
     sentences = re.split(r'(?<=[.!?])\s+', text)
     result = []
     for s in sentences:
@@ -116,7 +117,7 @@ textarea { background-color: #121212 !important; color: #ffffff !important; bord
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer v4.2.1</h1><p>Natural rhythm, real voice, academic confidence.</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer v4.3</h1><p>Smart rhythm. Raw tone. Built for undetectable precision.</p></div>', unsafe_allow_html=True)
 
 input_text = st.text_area("Paste your AI-generated academic text below:", height=280)
 
@@ -146,11 +147,10 @@ if st.session_state.human_output:
     st.download_button("💾 Download Output", data=edited_output, file_name="humanized_output.txt", mime="text/plain")
 
 st.markdown("---")
-st.markdown("#### 🧠 InfiniAi-Humanizer v4.2.1 — Precision Student Mode")
+st.markdown("#### 🧠 InfiniAi-Humanizer v4.3 — Burst-First with Transitional Rhythm")
 st.markdown("""
 Features:
-- 🎯 Blended academic and human rhythm
-- ✂️ Controlled sentence fragments + emphasis
-- 📚 Preserved citations and formatting
-- 🔄 Smart one-button rehumanizing on demand
+- 🧠 Controlled burst stacking with subtle transitional flow
+- ✂️ Realistic human tone, sentence fragments, echo phrases
+- 📚 Preserved academic structure, detector-safe cadence
 """)
