@@ -125,7 +125,8 @@ input_text = st.text_area("Paste your AI-generated academic text below (Max: 10,
 
 if len(input_text) > 10000:
     st.warning("⚠️ Your input is over 10,000 characters. Only the first 10,000 characters will be used.")
-st.markdown(f"**✍️ Characters Entered:** {len(input_text)} / 10000")
+st.markdown(f"**✍️ Characters Entered:** {len(input_text)} / 10000  ")
+st.markdown(f"**📗 Word Count (est.):** {len(input_text.split())} words")
 
 if st.button("🔁 Humanize / Re-Humanize Text"):
     if input_text.strip():
