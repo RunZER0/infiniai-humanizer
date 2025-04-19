@@ -12,7 +12,7 @@ if "human_output" not in st.session_state:
 if "previous_inputs" not in st.session_state:
     st.session_state.previous_inputs = {}
 
-# === HUMANIZER v4.2.1 — Enhanced Balance Edition ===
+# === HUMANIZER v4.2.1 — Precision Student Mode ===
 PROMPT = (
     "Rewrite the following academic content like a real student would:"
     " Maintain clarity and academic tone, but alternate between full, structured sentences and short, blunt ones."
@@ -82,10 +82,6 @@ def inject_choppy_fragments(text):
     return " ".join(result)
 
 def humanize_text(text):
-    input_hash = hashlib.sha256(text.strip().encode()).hexdigest()
-    if st.session_state.previous_inputs.get(input_hash):
-        return st.session_state.human_output
-
     simplified = downgrade_vocab(text)
     structured = paragraph_balancer(simplified)
     echoed = insert_redundancy(structured)
@@ -104,7 +100,6 @@ def humanize_text(text):
     )
 
     result = response.choices[0].message.content.strip()
-    st.session_state.previous_inputs[input_hash] = True
     return result
 
 # === UI ===
@@ -128,7 +123,7 @@ if input_text.strip():
     score = round(textstat.flesch_reading_ease(input_text), 1)
     st.markdown(f"**📊 Input Word Count:** {words} &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; **🧠 Readability Score:** {score}%")
 
-if st.button("🔁 Humanize Text"):
+if st.button("🔁 Humanize Text") or (st.session_state.human_output and st.button("♻️ Re-Humanize Again")):
     if input_text.strip():
         with st.spinner("Finalizing balance of clarity and realism..."):
             output = humanize_text(input_text)
