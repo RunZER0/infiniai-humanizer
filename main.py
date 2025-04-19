@@ -12,14 +12,15 @@ if "human_output" not in st.session_state:
 if "previous_inputs" not in st.session_state:
     st.session_state.previous_inputs = {}
 
-# === HUMANIZER v4.1 — BALANCED ACADEMIC EDITION ===
+# === HUMANIZER v4.2 — SMOOTH-CHOPPY HYBRID ===
 PROMPT = (
-    "Rewrite the following academic content to sound like it was written by a real student. "
-    "Alternate between short, choppy, blunt sentences and longer, clearer ones for flow. "
-    "Make some ideas direct. Fragmented. Abrupt. Others should elaborate clearly and academically. "
-    "Allow sentence fragments and repetition for emphasis. Insert plain transitions. "
-    "Avoid robotic structure. Vary rhythm naturally. Do not overpolish. Do not add new ideas. "
-    "Preserve all in-text citations, quotes, names, and formatting."
+    "Rewrite the following academic content like a real student would:"
+    " Combine short, choppy sentences with longer, explanatory ones."
+    " Each paragraph should start clearly and include at least one flowing sentence."
+    " Use 1–2 choppy statements per paragraph for emphasis—not rhythm."
+    " Avoid robotic tone. Use plain transitions, mild redundancy, and occasional fragments."
+    " Maintain an academic tone that balances clarity with realism."
+    " Do not add new ideas. Do not remove citations or names. Keep formatting."
 )
 
 SYNONYMS = {
@@ -40,42 +41,35 @@ def downgrade_vocab(text):
         text = re.sub(rf'\b{word}\b', simple, text, flags=re.IGNORECASE)
     return text
 
-def balance_sentences(text):
-    sentences = re.split(r'(?<=[.!?])\s+', text)
-    result = []
-    for s in sentences:
-        if len(s.split()) > 20 and random.random() < 0.5:
-            split = re.split(r'(,|;| and | but | because )', s)
-            small = ""
-            for chunk in split:
-                small += chunk
-                if len(small.split()) >= random.randint(6, 12):
-                    result.append(small.strip())
-                    small = ""
-            if small:
-                result.append(small.strip())
-        else:
-            result.append(s.strip())
-    return " ".join(result)
+def paragraph_balancer(text):
+    paragraphs = text.split('\n')
+    balanced = []
+    for p in paragraphs:
+        sentences = re.split(r'(?<=[.!?])\s+', p)
+        buffer = []
+        chop_count = 0
+        for s in sentences:
+            s_clean = s.strip()
+            if not s_clean:
+                continue
+            if len(s_clean.split()) > 20:
+                buffer.append(s_clean)
+            elif chop_count < 2:
+                buffer.append(s_clean)
+                chop_count += 1
+            else:
+                combined = s_clean + (" " + random.choice(["Still.", "This matters.", "Even then."]) if random.random() < 0.3 else "")
+                buffer.append(combined)
+        balanced.append(" ".join(buffer))
+    return "\n\n".join(balanced)
 
-def insert_transitions(text):
-    soft_transitions = ["Still.", "That matters.", "Also important.", "A big deal.", "Even then.", "Because of this.", "But not always."]
-    lines = re.split(r'(?<=[.!?])\s+', text)
-    output = []
-    for line in lines:
-        output.append(line)
-        if random.random() < 0.25:
-            output.append(random.choice(soft_transitions))
-    return " ".join(output)
-
-def echo_lines(text):
-    echoes = ["This shows that", "To say it again:", "That proves one thing:", "We can tell from this that"]
+def insert_redundancy(text):
     lines = re.split(r'(?<=[.!?])\s+', text)
     output = []
     for i, line in enumerate(lines):
         output.append(line)
-        if random.random() < 0.2 and len(line.split()) > 6:
-            output.append(f"{random.choice(echoes)} {line.strip().split()[0].lower()}...")
+        if random.random() < 0.15 and len(line.split()) > 6:
+            output.append(f"This shows that {line.strip().split()[0].lower()} is important.")
     return " ".join(output)
 
 def humanize_text(text):
@@ -83,12 +77,11 @@ def humanize_text(text):
     if st.session_state.previous_inputs.get(input_hash):
         return st.session_state.human_output
 
-    basic = downgrade_vocab(text)
-    structured = balance_sentences(basic)
-    transitioned = insert_transitions(structured)
-    echoed = echo_lines(transitioned)
+    simplified = downgrade_vocab(text)
+    structured = paragraph_balancer(simplified)
+    echoed = insert_redundancy(structured)
 
-    full_prompt = f"{PROMPT}\n\n{echoed}\n\nRewrite this following all rules above."
+    full_prompt = f"{PROMPT}\n\n{echoed}\n\nRewrite this with the structure and tone described."
 
     response = openai.chat.completions.create(
         model="gpt-4o",
@@ -116,7 +109,7 @@ textarea { background-color: #121212 !important; color: #ffffff !important; bord
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer v4.1</h1><p>Balanced academic writing: blunt + clear + detector-safe.</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer v4.2</h1><p>Balanced realism: academic tone meets natural rhythm.</p></div>', unsafe_allow_html=True)
 
 input_text = st.text_area("Paste your AI-generated academic text below:", height=250)
 
@@ -127,7 +120,7 @@ if input_text.strip():
 
 if st.button("🔁 Humanize Text"):
     if input_text.strip():
-        with st.spinner("Humanizing using real student rhythm and structure..."):
+        with st.spinner("Balancing tone and structure..."):
             output = humanize_text(input_text)
             st.session_state.human_output = output
     else:
@@ -145,11 +138,12 @@ if st.session_state.human_output:
     st.download_button("💾 Download Output", data=edited_output, file_name="humanized_output.txt", mime="text/plain")
 
 st.markdown("---")
-st.markdown("#### 🎓 InfiniAi-Humanizer v4.1 – Balanced Academic Flow")
+st.markdown("#### ✨ InfiniAi-Humanizer v4.2 – Smooth-Choppy Hybrid")
 st.markdown("""
-This version blends:
-- ✂️ Choppy sentence rhythm with flowing explanations
-- 🧠 Real student imperfection with academic tone
-- 📚 Citation-safe rewording
-Designed to sound human, pass AI detectors, and keep your professors satisfied.
+Designed to:
+- 🎯 Maintain academic clarity
+- ✂️ Sprinkle choppy phrases for realism
+- 📚 Keep citations intact
+- 🧠 Sound like a student, not a script
+Perfect balance. Real student voice.
 """)
