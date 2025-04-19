@@ -15,16 +15,10 @@ if "last_input_text" not in st.session_state:
     st.session_state.last_input_text = ""
 
 PROMPT = (
-    "Rewrite the following academic content like a real student would:"
-    " Use an academic tone that sounds natural but human."
-    " Maintain a strong balance between punchy bursts and fluid, complete sentences."
-    "Rewrite the following academic content like a real student would:"
-    " Maintain a strong balance between punchy bursts and fluid, complete sentences."
-    " Use short fragments, sentence drops, and emphasis strategically—1 to 2 per paragraph only."
-    " The rest should be longer, thought-out student-style sentences."
-    " Introduce mild imperfections and occasional transitions like 'Still,' or 'Even so,' to keep the flow natural."
-    " Avoid robotic rhythm or stacking too many short bursts."
-    " Preserve all citations, formatting, and academic structure."
+    "Rewrite the following passage in a way that reflects a natural human voice,"
+    " with clear logic, academic tone, and subtle variation in sentence structure."
+    " It should read like something a smart student wrote on a good day—intelligent, but not perfect."
+    " Keep the content intact but rewrite for improved naturalness, flow, and believability."
 )
 
 SYNONYMS = {
