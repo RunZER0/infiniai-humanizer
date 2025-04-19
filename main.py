@@ -12,17 +12,14 @@ if "human_output" not in st.session_state:
 if "previous_inputs" not in st.session_state:
     st.session_state.previous_inputs = {}
 
-# === HUMANIZER v4.0 — CHOPPY ACADEMIC MODE ===
+# === HUMANIZER v4.1 — BALANCED ACADEMIC EDITION ===
 PROMPT = (
-    "Rewrite the following academic content to sound like it was written by a real, slightly tired student."
-    " Keep the tone academic, but break up the sentences as much as possible."
-    " Chop long sentences into short, blunt ones. Some sentence fragments are okay."
-    " Repeat ideas for emphasis if needed. Keep transitions plain."
-    " Vary sentence length randomly."
-    " Insert awkward phrasing, redundancy, and comma splices."
-    " Do NOT smooth the flow. Do NOT write like an AI."
-    " Keep in-text citations and references untouched."
-    " Don't add new ideas. Just restructure."
+    "Rewrite the following academic content to sound like it was written by a real student. "
+    "Alternate between short, choppy, blunt sentences and longer, clearer ones for flow. "
+    "Make some ideas direct. Fragmented. Abrupt. Others should elaborate clearly and academically. "
+    "Allow sentence fragments and repetition for emphasis. Insert plain transitions. "
+    "Avoid robotic structure. Vary rhythm naturally. Do not overpolish. Do not add new ideas. "
+    "Preserve all in-text citations, quotes, names, and formatting."
 )
 
 SYNONYMS = {
@@ -33,64 +30,65 @@ SYNONYMS = {
     "implementation": "doing",
     "prohibit": "stop",
     "facilitate": "help",
-    "demonstrate": "show"
+    "demonstrate": "show",
+    "significant": "big",
+    "furthermore": "also"
 }
-
-def chop_and_roughen(text):
-    text = re.sub(r'(?<=[a-zA-Z0-9]),', '.', text)
-    chunks = re.split(r'(?<=[.!?])\s+', text)
-    output = []
-    for chunk in chunks:
-        if len(chunk.split()) > 18:
-            parts = re.split(r'(,|;|:| and | but | because )', chunk)
-            small = ""
-            for p in parts:
-                small += p
-                if len(small.split()) > 9:
-                    output.append(small.strip())
-                    small = ""
-            if small:
-                output.append(small.strip())
-        else:
-            output.append(chunk.strip())
-    return " ".join(output)
-
-def repeat_some_lines(text):
-    lines = re.split(r'(?<=[.!?])\s+', text)
-    out = []
-    for line in lines:
-        out.append(line)
-        if random.random() < 0.2 and len(line.split()) > 5:
-            first = line.strip().split()[0]
-            out.append(f"This shows how {first.lower()} matters.")
-    return " ".join(out)
 
 def downgrade_vocab(text):
     for word, simple in SYNONYMS.items():
         text = re.sub(rf'\b{word}\b', simple, text, flags=re.IGNORECASE)
     return text
 
-def inject_disfluency(text):
-    fragments = ["Even then.", "Because of that.", "That changed things.", "Still.", "But not really.", "Not always."]
+def balance_sentences(text):
     sentences = re.split(r'(?<=[.!?])\s+', text)
-    mixed = []
+    result = []
     for s in sentences:
-        mixed.append(s)
-        if random.random() < 0.2:
-            mixed.append(random.choice(fragments))
-    return " ".join(mixed)
+        if len(s.split()) > 20 and random.random() < 0.5:
+            split = re.split(r'(,|;| and | but | because )', s)
+            small = ""
+            for chunk in split:
+                small += chunk
+                if len(small.split()) >= random.randint(6, 12):
+                    result.append(small.strip())
+                    small = ""
+            if small:
+                result.append(small.strip())
+        else:
+            result.append(s.strip())
+    return " ".join(result)
+
+def insert_transitions(text):
+    soft_transitions = ["Still.", "That matters.", "Also important.", "A big deal.", "Even then.", "Because of this.", "But not always."]
+    lines = re.split(r'(?<=[.!?])\s+', text)
+    output = []
+    for line in lines:
+        output.append(line)
+        if random.random() < 0.25:
+            output.append(random.choice(soft_transitions))
+    return " ".join(output)
+
+def echo_lines(text):
+    echoes = ["This shows that", "To say it again:", "That proves one thing:", "We can tell from this that"]
+    lines = re.split(r'(?<=[.!?])\s+', text)
+    output = []
+    for i, line in enumerate(lines):
+        output.append(line)
+        if random.random() < 0.2 and len(line.split()) > 6:
+            output.append(f"{random.choice(echoes)} {line.strip().split()[0].lower()}...")
+    return " ".join(output)
 
 def humanize_text(text):
     input_hash = hashlib.sha256(text.strip().encode()).hexdigest()
     if st.session_state.previous_inputs.get(input_hash):
         return st.session_state.human_output
 
-    rough = downgrade_vocab(text)
-    chopped = chop_and_roughen(rough)
-    echoed = repeat_some_lines(chopped)
-    broken = inject_disfluency(echoed)
+    basic = downgrade_vocab(text)
+    structured = balance_sentences(basic)
+    transitioned = insert_transitions(structured)
+    echoed = echo_lines(transitioned)
 
-    full_prompt = f"{PROMPT}\n\n{broken}\n\nReword this accordingly. Maintain academic tone but prioritize realism and sentence fragmentation."
+    full_prompt = f"{PROMPT}\n\n{echoed}\n\nRewrite this following all rules above."
 
     response = openai.chat.completions.create(
         model="gpt-4o",
@@ -118,7 +116,7 @@ textarea { background-color: #121212 !important; color: #ffffff !important; bord
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer v4.0</h1><p>Academic writing with real, raw, choppy human energy.</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer v4.1</h1><p>Balanced academic writing: blunt + clear + detector-safe.</p></div>', unsafe_allow_html=True)
 
 input_text = st.text_area("Paste your AI-generated academic text below:", height=250)
 
@@ -129,7 +127,7 @@ if input_text.strip():
 
 if st.button("🔁 Humanize Text"):
     if input_text.strip():
-        with st.spinner("Ripping it apart like a real student would..."):
+        with st.spinner("Humanizing using real student rhythm and structure..."):
             output = humanize_text(input_text)
             st.session_state.human_output = output
     else:
@@ -147,12 +145,11 @@ if st.session_state.human_output:
     st.download_button("💾 Download Output", data=edited_output, file_name="humanized_output.txt", mime="text/plain")
 
 st.markdown("---")
-st.markdown("#### ⚡ InfiniAi-Humanizer v4.0 – Choppy Academic Edition")
+st.markdown("#### 🎓 InfiniAi-Humanizer v4.1 – Balanced Academic Flow")
 st.markdown("""
-This version transforms AI-generated content into:
-- ✂️ Sentence fragments and hard breaks
-- 🧱 Deliberate rhythm variation
-- 🔁 Repetitions and imperfections
-- 📚 Citation-safe restructuring
-Built to beat AI detectors and sound like real academic writing — tired, real, and raw.
+This version blends:
+- ✂️ Choppy sentence rhythm with flowing explanations
+- 🧠 Real student imperfection with academic tone
+- 📚 Citation-safe rewording
+Designed to sound human, pass AI detectors, and keep your professors satisfied.
 """)
