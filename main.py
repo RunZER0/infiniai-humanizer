@@ -2,7 +2,6 @@ import streamlit as st
 import openai
 import random
 import textstat
-import hashlib
 import re
 
 openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -14,6 +13,7 @@ if "previous_inputs" not in st.session_state:
 if "last_input_text" not in st.session_state:
     st.session_state.last_input_text = ""
 
+# === ENGINE (v4.2.1) ===
 PROMPT = (
     "Rewrite the following passage in a way that reflects a natural human voice,"
     " with clear logic, academic tone, and subtle variation in sentence structure."
@@ -21,45 +21,11 @@ PROMPT = (
     " Keep the content intact but rewrite for improved naturalness, flow, and believability."
 )
 
-SYNONYMS = {
-    "utilize": "use",
-    "therefore": "so",
-    "subsequently": "then",
-    "prioritize": "focus on",
-    "implementation": "doing",
-    "prohibit": "stop",
-    "facilitate": "help",
-    "demonstrate": "show",
-    "significant": "big",
-    "furthermore": "also"
-}
-
 def downgrade_vocab(text):
-    for word, simple in SYNONYMS.items():
-        text = re.sub(rf'\b{word}\b', simple, text, flags=re.IGNORECASE)
     return text
 
 def paragraph_balancer(text):
-    paragraphs = text.split('\n')
-    balanced = []
-    for p in paragraphs:
-        sentences = re.split(r'(?<=[.!?])\s+', p)
-        buffer = []
-        chop_count = 0
-        for s in sentences:
-            s_clean = s.strip()
-            if not s_clean:
-                continue
-            if len(s_clean.split()) > 18:
-                buffer.append(s_clean)
-            elif chop_count < 2:
-                buffer.append(s_clean)
-                chop_count += 1
-            else:
-                combined = s_clean + (" " + random.choice(["Still.", "This matters.", "Even then.", "Even so.", "That said.", "Which is why it matters."]) if random.random() < 0.3 else "")
-                buffer.append(combined)
-        balanced.append(" ".join(buffer))
-    return "\n\n".join(balanced)
+    return text
 
 def insert_redundancy(text):
     lines = re.split(r'(?<=[.!?])\s+', text)
@@ -71,7 +37,9 @@ def insert_redundancy(text):
     return " ".join(output)
 
 def inject_choppy_fragments(text):
-    additions = ["This matters.", "Big risk.", "Still.", "Not always.", "A serious problem.", "That’s the issue.", "Even that’s not enough.", "Which is why it matters.", "Even so.", "That said."]
+    additions = ["This matters.", "Big risk.", "Still.", "Not always.", "A serious problem.",
+                 "That’s the issue.", "Even that’s not enough.", "Which is why it matters.",
+                 "Even so.", "That said."]
     sentences = re.split(r'(?<=[.!?])\s+', text)
     result = []
     chop_limit = 0
@@ -103,7 +71,7 @@ def humanize_text(text):
     result = response.choices[0].message.content.strip()
     return result
 
-# === UI ===
+# === UI (from v4.4) ===
 st.markdown("""
 <style>
 .stApp { background-color: #0d0d0d; color: #00ffff; font-family: 'Segoe UI', monospace; text-align: center; }
@@ -147,7 +115,7 @@ if st.session_state.human_output:
 
     st.download_button("💾 Download Output", data=edited_output, file_name="humanized_output.txt", mime="text/plain")
 
-st.markdown("**Version 4.4**")
+st.markdown("**Version 4.5**")
 st.markdown("---")
 st.markdown("""
 <div class='features-grid'>
