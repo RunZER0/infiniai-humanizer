@@ -2,7 +2,6 @@ import streamlit as st
 import openai
 import random
 import textstat
-import hashlib
 import re
 
 openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -104,7 +103,7 @@ def humanize_text(text):
     result = response.choices[0].message.content.strip()
     return result
 
-# === UI ===
+# === UI (v4.4 layout with v4.5 label) ===
 st.markdown("""
 <style>
 .stApp { background-color: #0d0d0d; color: #00ffff; font-family: 'Segoe UI', monospace; text-align: center; }
@@ -113,24 +112,27 @@ textarea { background-color: #121212 !important; color: #ffffff !important; bord
 .stButton > button:hover { background-color: #00cccc; transform: scale(1.03); }
 .stDownloadButton button { background-color: #00ffff; color: black; font-weight: bold; border-radius: 5px; }
 .centered-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.features-grid { display: flex; justify-content: space-around; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #00ffff; }
+.feature, .comment { width: 30%; text-align: left; font-size: 14px; }
+.vertical-divider { border-left: 1px solid #00ffff; height: 100%; margin: 0 1rem; }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer v4.2.1</h1><p>Natural rhythm, real voice, academic confidence.</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Turn robotic AI text into real, natural, human-sounding writing.</p></div>', unsafe_allow_html=True)
 
-input_text = st.text_area("Paste your AI-generated academic text below:", height=280)
+input_text = st.text_area("Paste your AI-generated academic text below (Max: 10,000 characters):", height=280, max_chars=10000)
 
-if input_text.strip():
-    words = len(input_text.split())
-    score = round(textstat.flesch_reading_ease(input_text), 1)
-    st.markdown(f"**📊 Input Word Count:** {words} &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; **🧠 Readability Score:** {score}%")
+if len(input_text) > 10000:
+    st.warning("⚠️ Your input is over 10,000 characters. Only the first 10,000 characters will be used.")
+st.markdown(f"**{len(input_text.split())} Words, {len(input_text)} Characters**")
 
 if st.button("🔁 Humanize / Re-Humanize Text"):
     if input_text.strip():
+        trimmed_input = input_text[:10000]
         with st.spinner("Humanizing academic text..."):
-            output = humanize_text(input_text)
+            output = humanize_text(trimmed_input)
             st.session_state.human_output = output
-            st.session_state.last_input_text = input_text
+            st.session_state.last_input_text = trimmed_input
     else:
         st.warning("Please enter some text first.")
 
@@ -145,12 +147,32 @@ if st.session_state.human_output:
 
     st.download_button("💾 Download Output", data=edited_output, file_name="humanized_output.txt", mime="text/plain")
 
+st.markdown("**Version 4.5**")
 st.markdown("---")
-st.markdown("#### 🧠 InfiniAi-Humanizer v4.2.1 — Precision Student Mode")
 st.markdown("""
-Features:
-- 🎯 Blended academic and human rhythm
-- ✂️ Controlled sentence fragments + emphasis
-- 📚 Preserved citations and formatting
-- 🔄 Smart one-button rehumanizing on demand
-""")
+<div class='features-grid'>
+    <div class='feature'>
+        <strong>✍️ Natural Cadence:</strong><br>
+        Your words flow like a real student — no rigid AI rhythm.
+    </div>
+    <div class='vertical-divider'></div>
+    <div class='feature'>
+        <strong>🔁 Structured Variance:</strong><br>
+        Paragraphs balance bursts and full thoughts for human clarity.
+    </div>
+    <div class='vertical-divider'></div>
+    <div class='feature'>
+        <strong>📚 Academic Realism:</strong><br>
+        The tone mimics thoughtful effort, not perfect computation.
+    </div>
+</div>
+
+<div class='features-grid'>
+    <div class='comment'>
+        <em>"This actually sounds like I wrote it after a long study night."</em><br><strong>- Real user</strong>
+    </div>
+    <div class='comment'>
+        <em>"Passed the AI check with flying colors. And my professor said it felt authentic."</em><br><strong>- Another user</strong>
+    </div>
+</div>
+""", unsafe_allow_html=True)
