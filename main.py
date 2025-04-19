@@ -15,123 +15,71 @@ if "last_style" not in st.session_state:
 if "previous_inputs" not in st.session_state:
     st.session_state.previous_inputs = {}
 
-# Serious-tone personas only
+# Tone variants using rules from Kai's humanizer profile
 TONE_VARIANTS = [
     {
-        "label": "📘 Academic Reworded From Memory",
+        "label": "📘 Feminist Legal Rewrite",
         "preserve_citations": True,
         "prompt": (
-            "You just read this paragraph and now you're explaining it in your own words, from memory — not trying to be perfect, just accurate. "
-            "It should feel like a real person recalling what they understood, not reciting or copying. Don’t smooth out the rough edges; slight pauses, "
-            "varied structure, and natural transitions are good. Keep all citations exactly where they are."
+            "You're rewording academic content based on memory, influenced by feminist legal theory. It should sound like a thoughtful graduate student at 2AM: varied sentence lengths, human pacing, slight imperfections, some echoing, and structurally loosened clauses. Keep all in-text citations exactly as they are."
         )
     },
     {
-        "label": "🎓 Grad Student Late Rewrite",
+        "label": "🧠 Real Student Summary",
         "preserve_citations": True,
         "prompt": (
-            "You're a grad student rewriting a chunk of AI-generated text late at night. You’re tired, you get the gist, and you’re trying to make it sound human — "
-            "not polished, not stiff, just real. Let the structure shift, vary sentence length, and don’t obsess over perfect grammar. Just sound like someone doing their best "
-            "to rephrase what they remember. All in-text citations must stay exactly as they are."
-        )
-    },
-    {
-        "label": "📊 Technical Paraphrase",
-        "preserve_citations": True,
-        "prompt": (
-            "You’re paraphrasing this technical explanation like a real person would after reading it once. Your job is to keep the technical accuracy and logic, "
-            "but shift the tone and rhythm so it doesn’t feel machine-written. Use a more natural structure and make it sound like a thoughtful human summary. "
-            "Keep all in-text citations exactly as they are."
-        )
-    },
-    {
-        "label": "🧑‍🏫 Semi-Formal Explanation",
-        "preserve_citations": True,
-        "prompt": (
-            "You’ve read an AI-written paragraph and now you're rephrasing it like a human would explain it — semi-formally, but without that stiff or robotic tone. "
-            "Aim for clarity and flow that sounds natural in real conversation or writing. Vary your pacing, use real-sounding phrasing, and don’t worry about perfection. "
-            "All citations must stay intact."
-        )
-    },
-    {
-        "label": "👧 Simplified Academic Style",
-        "preserve_citations": True,
-        "prompt": (
-            "You’re turning an academic paragraph into more accessible, plain English — the kind of writing a human might use when trying to make something understandable "
-            "without dumbing it down. Avoid the mechanical feel of AI text. Focus on simplicity, rhythm, and meaning. Keep all in-text citations as they appear."
-        )
-    },
-    {
-        "label": "🧠 2AM Real Rewrite",
-        "preserve_citations": True,
-        "prompt": (
-            "It's 2AM and you're rewriting an AI-generated section of your paper from memory. You remember the core ideas, but you're not trying to sound perfect — just real and intelligent. "
-            "Let your sentence structure breathe, vary your rhythm, and use natural word choices. You’re thinking while writing, not copy-pasting. "
-            "All citations need to remain in place, unchanged."
+            "Reword the following as if a real student is trying to make sense of dense legal theory late at night. Keep the meaning but soften the tone. Break long sentences. Add natural transitions. Vary structure. Keep citations in place."
         )
     }
 ]
 
-def weaken_academic_tone(text):
+def sentence_variability(text):
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    modified = []
+    for sentence in sentences:
+        if not sentence.strip():
+            continue
+        if random.random() < 0.3:
+            sentence = re.sub(r" and ", " plus ", sentence)
+        if random.random() < 0.25:
+            sentence = sentence.replace(" in ", " inside ")
+        if random.random() < 0.2:
+            sentence = re.sub(r'\bis\b', ' seems to be', sentence)
+        if random.random() < 0.15:
+            sentence = "Actually, " + sentence
+        modified.append(sentence)
+    return " ".join(modified)
+
+def lexical_simplification(text):
     replacements = {
-        "therefore": "so",
-        "moreover": "also",
-        "additionally": "a next step",
-        "cognitive": "thinking",
-        "motor": "movement",
-        "developmental outcomes": "growth results",
-        "suggests": "shows",
-        "predictor": "sign",
-        "psychomotor": "movement and brain",
-        "fetal": "baby's",
-        "prenatal": "before birth",
+        "codified": "written",
+        "prohibit": "stop",
         "utilize": "use",
-        "researchers": "the people studying this",
-        "in utero": "inside the womb"
+        "therefore": "so",
+        "implementation": "application",
+        "gender-neutral": "non-gendered",
+        "prioritize": "focus on",
+        "notwithstanding": "even though"
     }
     for key, val in replacements.items():
         text = re.sub(rf'\b{re.escape(key)}\b', val, text, flags=re.IGNORECASE)
     return text
 
-def break_and_variabilize(text):
-    sentences = re.split(r'(?<=[.!?])\s+', text)
-    modified = []
-    for sentence in sentences:
-        if sentence:
-            if random.random() < 0.3:
-                sentence = sentence.replace(" and ", " along with ")
-            if random.random() < 0.25:
-                sentence = sentence.replace(" in ", " inside ")
-            if random.random() < 0.2:
-                sentence = re.sub(r'\bis\b', 'turns out to be', sentence)
-            if random.random() < 0.15:
-                sentence = "Actually, " + sentence
-            modified.append(sentence)
-    return " ".join(modified)
-
-def inject_human_flaws(text):
-    filler_phrases = [
-        "in a way", "kind of", "basically", "to be clear", "actually", 
-        "from what I understand", "this means", "sort of"
-    ]
-    clarifiers = [
-        ("which means", "which basically means"),
-        ("this shows", "this kind of shows"),
-        ("it suggests", "it sort of suggests"),
-        ("in conclusion", "so, in a way")
+def inject_flaws_and_redundancy(text):
+    fillers = ["basically", "sort of", "kind of", "in some ways"]
+    echo_phrases = [
+        ("shows", "this shows that"),
+        ("reveals", "which basically reveals"),
+        ("suggests", "which sort of suggests")
     ]
     lines = re.split(r'(?<=[.!?])\s+', text)
     new_lines = []
     for line in lines:
-        if not line.strip():
-            continue
         if random.random() < 0.25:
-            line = f"{random.choice(filler_phrases).capitalize()}, {line}"
-        for original, flawed in clarifiers:
-            if original in line and random.random() < 0.5:
-                line = line.replace(original, flawed)
-        if random.random() < 0.2:
-            line = re.sub(r'\b(the|a|an)\b ', '', line, flags=re.IGNORECASE)
+            line = f"{random.choice(fillers).capitalize()}, {line}"
+        for orig, echo in echo_phrases:
+            if orig in line and random.random() < 0.5:
+                line = line.replace(orig, echo)
         new_lines.append(line)
     return " ".join(new_lines)
 
@@ -154,24 +102,12 @@ def humanize_text(text):
     st.session_state.previous_inputs[input_hash] = used_variants
 
     system_prompt = variant["prompt"]
-    preserve_citations = variant["preserve_citations"]
-
-    base_text = weaken_academic_tone(text)
-    altered_text = break_and_variabilize(base_text)
-    altered_text = inject_human_flaws(altered_text)
-
-    citation_instruction = (
-        "Preserve all in-text citations exactly as written."
-        if preserve_citations else
-        "You may reword or skip citations naturally if needed."
-    )
+    base_text = lexical_simplification(text)
+    altered_text = sentence_variability(base_text)
+    flawed_text = inject_flaws_and_redundancy(altered_text)
 
     full_prompt = (
-        f"{system_prompt}\n\n"
-        f"{altered_text}\n\n"
-        "Now rewrite this as if you're explaining it in your own words, based on memory. "
-        "Use simple, varied sentence lengths. Be accurate, but not polished. "
-        f"{citation_instruction}"
+        f"{system_prompt}\n\n{flawed_text}\n\nNow rewrite this in your own words. Keep the meaning, but loosen the tone. Vary sentence structure, allow imperfections, and retain citations exactly as they are."
     )
 
     response = openai.chat.completions.create(
@@ -180,7 +116,7 @@ def humanize_text(text):
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": full_prompt}
         ],
-        temperature=0.85,
+        temperature=0.9,
         max_tokens=1500
     )
 
@@ -261,16 +197,16 @@ if st.session_state.human_output:
 
 def show_footer():
     st.markdown("---")
-    st.markdown("#### 🌟 InfiniAi-Humanizer v1.4")
+    st.markdown("#### 🌟 InfiniAi-Humanizer v2.0")
     st.markdown("""
-    InfiniAi-Humanizer rewrites AI-sounding text into believable, natural-sounding content.  
-    Built to pass AI detectors with human-style pacing, simplified structure, and citation-safe memory-based rephrasing.
+    InfiniAi-Humanizer rewrites AI-sounding text into believable, natural-sounding academic work. 
+    Powered by GPT-4o and a custom-trained rule engine built from real dissertation transformations.
 
-    **What People Say:**  
-    - 🧒 “It made my story sound like *me*! That’s cool.”  
-    - 👩 “I clicked the button and boom! It was better.”  
-    - 🧑‍🏫 “Now my students sound way less like robots. I love it.”  
-    - 👶 “This thing is smart. And fun. Like a magic helper.”  
+    **Engine Highlights:**  
+    - 💡 Clause breaking + soft transitions  
+    - 🔁 Echo phrasing for natural emphasis  
+    - 👩‍🎓 Feminist legal tone supported  
+    - 📚 Citation-safe academic rewrites  
     """)
 
 if not st.session_state.human_output:
