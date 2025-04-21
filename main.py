@@ -122,29 +122,45 @@ textarea { background-color: #121212 !important; color: #ffffff !important; bord
 </style>
 """, unsafe_allow_html=True)
 
+
+# === Word Package Payment UI ===
+from urllib.parse import urlencode
+
+st.markdown(
+    '<div style="display: flex; justify-content: space-between; align-items: center;">'
+    '<h1 style="margin: 0;">🤖 InfiniAi-Humanizer</h1>'
+    '<form action="?pay=1" method="get">'
+    '<button style="background-color:#00ffff; color:black; font-weight:bold; border:none; padding:0.6rem 1.2rem; border-radius:8px; font-size:16px;">PAY</button>'
+    '</form>'
+    '</div>',
+    unsafe_allow_html=True
+)
+
+# If user clicked the PAY button, show new page for payment
+query_params = st.experimental_get_query_params()
+if 'pay' in query_params:
+    st.markdown("### 📦 Select Your Word Package")
+    words = st.slider("Choose your desired package size (in words):", min_value=100, max_value=100000, step=100)
+    price = round((words * 0.00045), 2)
+    st.markdown(f"**Estimated Price:** ${price:.2f}")
+
+    if st.button("💰 Proceed to Pay with MPESA"):
+        st.markdown(f""" 
+        ### 🔐 How to Pay with MPESA (Send Money)
+
+        - Open your MPESA menu on your phone.
+        - Select **Send Money**.
+        - Enter **0795191421** as the number.
+        - Send **Ksh {price:.2f}** for **{words} words**.
+        - Use your name as the reference.
+        - After payment, wait for confirmation and return to the app.
+
+        **Once payment is verified, full access will be granted.**
+        """, unsafe_allow_html=True)
+    st.stop()
+
+
 st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Turn robotic AI text into real, natural, human-sounding writing.</p></div>', unsafe_allow_html=True)
-
-
-# === Word Package Selection ===
-st.markdown("### 📦 Select Your Word Package")
-words = st.slider("Choose your desired package size (in words):", min_value=100, max_value=100000, step=100)
-price = round((words * 0.00045), 2)
-st.markdown(f"**Estimated Price:** ${price:.2f}")
-
-if st.button("💰 Proceed to Pay with MPESA"):
-    st.markdown("""
-    ### 🔐 How to Pay with MPESA (Send Money)
-
-    - Open your MPESA menu on your phone.
-    - Select **Send Money**.
-    - Enter **0795191421** as the number.
-    - Send **Ksh {price:.2f}** for **{words} words**.
-    - Use your name as the reference.
-    - After payment, wait for confirmation and refresh the page.
-
-    **Once payment is verified, full access will be granted.**
-    """, unsafe_allow_html=True)
-
 
 input_text = st.text_area("Paste your AI-generated academic text below (Max: 10,000 characters):", height=280, max_chars=10000)
 
