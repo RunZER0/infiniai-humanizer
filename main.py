@@ -241,9 +241,7 @@ if st.button("🔁 Humanize / Re-Humanize Text"):
             """, unsafe_allow_html=True)
 
             st.session_state.total_words_used += len(trimmed_input.split())
-            cookies["words_used"] = str(st.session_state.total_words_used)
-            cookies.save()
-
+                        
     else:
         st.warning("Please enter some text first.")
 
