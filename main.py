@@ -111,38 +111,6 @@ def humanize_text(text):
     return result
 # === UI (v4.4 layout with v4.5 label) ===
 ', unsafe_allow_html=True)
-st.markdown("""
-<script>
-function setCookie(name, value, days) {
-    var expires = "";
-    if (days) {
-        var date = new Date();
-        date.setTime(date.getTime() + (days*24*60*60*1000));
-        expires = "; expires=" + date.toUTCString();
-    }
-    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
-}
-function getCookie(name) {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0;i < ca.length;i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-    }
-    return null;
-}
-function updateCookieField() {
-    var existing = getCookie("words_used");
-    if (existing === null) {
-        setCookie("words_used", "0", 365);
-        existing = "0";
-    }
-    document.getElementById("cookieReader").value = existing;
-}
-updateCookieField();
-</script>
-<input type="hidden" id="cookieReader">""", unsafe_allow_html=True)
 cookie_read = st.text_input("Hidden Cookie", key="cookieReader", label_visibility="collapsed")
 # === Safe Initialization of Session State ===
 cookie_val = 0
@@ -216,29 +184,3 @@ if st.session_state.human_output:
     st.download_button("💾 Download Output", data=edited_output, file_name="humanized_output.txt", mime="text/plain")
 st.markdown("**Version 4.5**")
 st.markdown("---")
-st.markdown("""
-<div class='features-grid'>
-    <div class='feature'>
-        <strong>✍️ Natural Cadence:</strong><br>
-        Your words flow like a real student — no rigid AI rhythm.
-    </div>
-    <div class='vertical-divider'></div>
-    <div class='feature'>
-        <strong>🔁 Structured Variance:</strong><br>
-        Paragraphs are well balanced for human clarity.
-    </div>
-    <div class='vertical-divider'></div>
-    <div class='feature'>
-        <strong>📚 Academic Realism:</strong><br>
-        The tone mimics thoughtful effort, not perfect computation.
-    </div>
-</div>
-<div class='features-grid'>
-    <div class='comment'>
-        <em>"This actually sounds like I wrote it after a long study night."</em><br><strong>- Joseph</strong>
-    </div>
-    <div class='comment'>
-        <em>"Passed the AI check with flying colors. And my professor said it felt authentic."</em><br><strong>- Kate</strong>
-    </div>
-</div>
-""", unsafe_allow_html=True)
