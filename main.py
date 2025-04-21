@@ -129,9 +129,7 @@ from urllib.parse import urlencode
 st.markdown(
     '<div style="display: flex; justify-content: space-between; align-items: center;">'
     '<h1 style="margin: 0;">🤖 InfiniAi-Humanizer</h1>'
-    '<form action="?pay=1" method="get">'
-    '<button style="background-color:#00ffff; color:black; font-weight:bold; border:none; padding:0.6rem 1.2rem; border-radius:8px; font-size:16px;">PAY</button>'
-    '</form>'
+    '<button onclick=\"window.location.href=\'?pay=1\'\" style=\"background-color:#00ffff; color:black; font-weight:bold; border:none; padding:0.6rem 1.2rem; border-radius:8px; font-size:16px;\">PAY</button>'
     '</div>',
     unsafe_allow_html=True
 )
