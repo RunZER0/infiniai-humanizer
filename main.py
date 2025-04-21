@@ -11,17 +11,17 @@ if "human_output" not in st.session_state:
     st.session_state.human_output = ""
 if "previous_inputs" not in st.session_state:
     st.session_state.previous_inputs = {}
+
 if "last_input_text" not in st.session_state:
-
-cookies = EncryptedCookieManager(prefix="humanizer_")
-
-if not cookies.ready():
-    st.stop()
-
-if "total_words_used" not in st.session_state:
-    st.session_state.total_words_used = int(cookies.get("words_used") or 0)
-
     st.session_state.last_input_text = ""
+    cookies = EncryptedCookieManager(prefix="humanizer_")
+
+    if not cookies.ready():
+        st.stop()
+
+    if "total_words_used" not in st.session_state:
+        st.session_state.total_words_used = int(cookies.get("words_used") or 0)
+
 
 # === HUMANIZER v4.2.1 — Precision Student Mode ===
 PROMPT = (
