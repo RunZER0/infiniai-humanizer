@@ -173,10 +173,10 @@ st.markdown("""
 
 <div class='features-grid'>
     <div class='comment'>
-        <em>"This actually sounds like I wrote it after a long study night."</em><br><strong>- Real user</strong>
+        <em>"This actually sounds like I wrote it after a long study night."</em><br><strong>- Joseph</strong>
     </div>
     <div class='comment'>
-        <em>"Passed the AI check with flying colors. And my professor said it felt authentic."</em><br><strong>- Another user</strong>
+        <em>"Passed the AI check with flying colors. And my professor said it felt authentic."</em><br><strong>- Kate</strong>
     </div>
 </div>
 """, unsafe_allow_html=True)
