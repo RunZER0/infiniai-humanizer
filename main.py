@@ -123,7 +123,13 @@ textarea { background-color: #121212 !important; color: #ffffff !important; bord
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Turn robotic AI text into real, natural, human-sounding writing.</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Turn robotic AI text into real, natural, human-sounding writing.</p></div>
+
+st.markdown(
+    '<div style="text-align: center; padding: 0.5rem;"><span style="color: red; font-weight: bold; font-size: 16px;">🚨 This is a trial version. You are limited to 700 total words. Upgrade to Pro for unlimited access.</span></div>',
+    unsafe_allow_html=True
+)
+', unsafe_allow_html=True)
 
 st.markdown("""
 <script>
