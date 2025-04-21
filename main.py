@@ -1,4 +1,4 @@
-from streamlit_cookies_manager import EncryptedCookieManager
+from streamlit_cookies_manager.encrypted_cookie_manager import EncryptedCookieManager
 import streamlit as st
 import openai
 import random
