@@ -134,6 +134,42 @@ textarea { background-color: #121212 !important; color: #ffffff !important; bord
 
 st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Turn robotic AI text into real, natural, human-sounding writing.</p></div>', unsafe_allow_html=True)
 
+st.markdown("""
+<script>
+function setCookie(name, value, days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+}
+
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+}
+
+function updateCookieField() {
+    var existing = getCookie("words_used");
+    if (existing === null) {
+        setCookie("words_used", "0", 365);
+        existing = "0";
+    }
+    document.getElementById("cookieReader").value = existing;
+}
+updateCookieField();
+</script>
+<input type="hidden" id="cookieReader">""", unsafe_allow_html=True)
+cookie_read = st.text_input("Hidden Cookie", key="cookieReader", label_visibility="collapsed")
+
 input_text = st.text_area("Paste your AI-generated academic text below (Max: 10,000 characters):", height=280, max_chars=10000)
 
 if len(input_text) > 10000:
@@ -152,6 +188,20 @@ if access_level != "pro":
         st.stop()
 
 
+
+# === Enforce 1000-word persistent limit using cookie value ===
+access_level = st.query_params.get("access", "free")
+used = 0
+try:
+    used = int(cookie_read.split("words_used=")[-1].split(";")[0])
+except:
+    pass
+
+if access_level != "pro" and used >= 1000:
+    st.error("🚫 Trial limit reached. You’ve used 1,000 words. To unlock unlimited access, please pay and use the pro link.")
+    st.stop()
+
+
 if st.button("🔁 Humanize / Re-Humanize Text"):
     if input_text.strip():
         trimmed_input = input_text[:10000]
@@ -159,6 +209,15 @@ if st.button("🔁 Humanize / Re-Humanize Text"):
             output = humanize_text(trimmed_input)
             st.session_state.human_output = output
             st.session_state.last_input_text = trimmed_input
+            st.markdown(f"""
+                <script>
+                var prev = getCookie("words_used") || "0";
+                var updated = parseInt(prev) + {len(trimmed_input.split())};
+                setCookie("words_used", updated, 365);
+                document.getElementById("cookieReader").value = updated;
+                </script>
+            """, unsafe_allow_html=True)
+
             st.session_state.total_words_used += len(trimmed_input.split())
             cookies["words_used"] = str(st.session_state.total_words_used)
             cookies.save()
