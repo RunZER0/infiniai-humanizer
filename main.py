@@ -130,6 +130,16 @@ if len(input_text) > 10000:
     st.warning("⚠️ Your input is over 10,000 characters. Only the first 10,000 characters will be used.")
 st.markdown(f"**{len(input_text.split())} Words, {len(input_text)} Characters**")
 
+
+# === Restriction Logic ===
+access_level = st.query_params.get("access", "free")
+
+# Word limit enforcement for free users
+if access_level != "pro" and len(input_text.split()) > 2000:
+    st.error("🚫 Free version limit: You can only humanize up to 2,000 words. To unlock full access, please pay and use the provided pro link.")
+    st.stop()
+
+
 if st.button("🔁 Humanize / Re-Humanize Text"):
     if input_text.strip():
         trimmed_input = input_text[:10000]
