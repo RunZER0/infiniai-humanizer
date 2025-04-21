@@ -180,6 +180,15 @@ if access_level != "pro":
 
 
 
+
+# === Initialize total_words_used from cookie ===
+if "total_words_used" not in st.session_state:
+    try:
+        st.session_state.total_words_used = int(cookie_read.split("words_used=")[-1].split(";")[0])
+    except:
+        st.session_state.total_words_used = 0
+
+
 # === Enforce 1000-word persistent limit using cookie value ===
 access_level = st.query_params.get("access", "free")
 used = 0
