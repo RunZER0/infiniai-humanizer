@@ -161,6 +161,17 @@ updateCookieField();
 <input type="hidden" id="cookieReader">""", unsafe_allow_html=True)
 cookie_read = st.text_input("Hidden Cookie", key="cookieReader", label_visibility="collapsed")
 
+# === Safe Initialization of Session State ===
+cookie_val = 0
+try:
+    cookie_val = int(cookie_read.split("words_used=")[-1].split(";")[0])
+except:
+    pass
+
+if "total_words_used" not in st.session_state:
+    st.session_state["total_words_used"] = cookie_val
+
+
 input_text = st.text_area("Paste your AI-generated academic text below (Max: 10,000 characters):", height=280, max_chars=10000)
 
 if len(input_text) > 10000:
