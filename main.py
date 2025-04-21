@@ -128,40 +128,6 @@ textarea { background-color: #121212 !important; color: #ffffff !important; bord
 
 st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Turn robotic AI text into real, natural, human-sounding writing.</p></div>', unsafe_allow_html=True)
 
-st.markdown("""
-<script>
-function setCookie(name, value, days) {
-    var expires = "";
-    if (days) {
-        var date = new Date();
-        date.setTime(date.getTime() + (days*24*60*60*1000));
-        expires = "; expires=" + date.toUTCString();
-    }
-    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
-}
-function getCookie(name) {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0;i < ca.length;i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-    }
-    return null;
-}
-function updateCookieField() {
-    var current = getCookie("words_used");
-    if (!current) {
-        setCookie("words_used", "0", 365);
-        current = "0";
-    }
-    document.getElementById("cookieReader").value = current;
-}
-updateCookieField();
-</script>
-<input type="hidden" id="cookieReader">""", unsafe_allow_html=True)
-cookie_read = st.text_input("Hidden Cookie", key="cookieReader", label_visibility="collapsed")
-
 input_text = st.text_area("Paste your AI-generated academic text below (Max: 10,000 characters):", height=280, max_chars=10000)
 
 if len(input_text) > 10000:
@@ -169,17 +135,9 @@ if len(input_text) > 10000:
 st.markdown(f"**{len(input_text.split())} Words, {len(input_text)} Characters**")
 
 
-    
-# Initialize word count from cookie
-try:
-    total_words_used = int(cookie_read.split("words_used=")[-1].split(";")[0])
-except:
-    total_words_used = 0
-
-
-# Enforce 700-word trial limit
+    # Enforce 700-word trial limit
 current_count = len(input_text.split())
-if total_words_used + current_count > 700:
+if st.session_state.total_words_used + current_count > 700:
     st.error("🚫 Trial limit reached: You’ve used your 700-word quota. Please upgrade to Pro for unlimited access.")
     st.stop()
 
@@ -190,14 +148,6 @@ if st.button("🔁 Humanize / Re-Humanize Text"):
             output = humanize_text(trimmed_input)
             st.session_state.human_output = output
             st.session_state.last_input_text = trimmed_input
-            new_total = total_words_used + len(trimmed_input.split())
-            st.markdown(f"""
-                <script>
-                setCookie("words_used", "{new_total}", 365);
-                document.getElementById("cookieReader").value = "{new_total}";
-                </script>
-            """, unsafe_allow_html=True)
-
             st.session_state.total_words_used += len(trimmed_input.split())
     else:
         st.warning("Please enter some text first.")
