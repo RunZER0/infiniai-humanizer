@@ -1,3 +1,4 @@
+from streamlit_cookies_manager import EncryptedCookieManager
 import streamlit as st
 import openai
 import random
@@ -11,6 +12,15 @@ if "human_output" not in st.session_state:
 if "previous_inputs" not in st.session_state:
     st.session_state.previous_inputs = {}
 if "last_input_text" not in st.session_state:
+
+cookies = EncryptedCookieManager(prefix="humanizer_")
+
+if not cookies.ready():
+    st.stop()
+
+if "total_words_used" not in st.session_state:
+    st.session_state.total_words_used = int(cookies.get("words_used") or 0)
+
     st.session_state.last_input_text = ""
 
 # === HUMANIZER v4.2.1 — Precision Student Mode ===
@@ -131,13 +141,15 @@ if len(input_text) > 10000:
 st.markdown(f"**{len(input_text.split())} Words, {len(input_text)} Characters**")
 
 
-# === Restriction Logic ===
+# === Persistent Word Limit Restriction ===
 access_level = st.query_params.get("access", "free")
+new_word_count = len(input_text.split())
 
-# Word limit enforcement for free users
-if access_level != "pro" and len(input_text.split()) > 2000:
-    st.error("🚫 Free version limit: You can only humanize up to 2,000 words. To unlock full access, please pay and use the provided pro link.")
-    st.stop()
+if access_level != "pro":
+    total = st.session_state.total_words_used + new_word_count
+    if total > 1500:
+        st.error("🚫 Free trial limit reached: You’ve used 1,500 words. To unlock unlimited access, please pay and visit the pro link.")
+        st.stop()
 
 
 if st.button("🔁 Humanize / Re-Humanize Text"):
@@ -147,6 +159,10 @@ if st.button("🔁 Humanize / Re-Humanize Text"):
             output = humanize_text(trimmed_input)
             st.session_state.human_output = output
             st.session_state.last_input_text = trimmed_input
+            st.session_state.total_words_used += len(trimmed_input.split())
+            cookies["words_used"] = str(st.session_state.total_words_used)
+            cookies.save()
+
     else:
         st.warning("Please enter some text first.")
 
