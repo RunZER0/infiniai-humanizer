@@ -185,7 +185,7 @@ new_word_count = len(input_text.split())
 
 if access_level != "pro":
     total = st.session_state.total_words_used + new_word_count
-    if total > 1500:
+    if total > 700:
         st.error("🚫 Free trial limit reached: You’ve used 1,500 words. To unlock unlimited access, please pay and visit the pro link.")
         st.stop()
 
