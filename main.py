@@ -1,22 +1,4 @@
 
-st.markdown("""
-<div class='centered-container'>
-    <h1>🤖 InfiniAi-Humanizer</h1>
-    <p>Turn robotic AI text into real, natural, human-sounding writing.</p>
-</div>
-<div style='text-align: center; padding: 0.5rem;'>
-    <span style='color: red; font-weight: bold; font-size: 16px;'>
-    🚨 This is a trial version. You are limited to 700 total words. Upgrade to Pro for unlimited access.
-    </span>
-</div>
-""", unsafe_allow_html=True)
-
-
-
-
-
-
-
 st.markdown(
     """
     <div class="centered-container">
@@ -31,24 +13,18 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-
 import streamlit as st
 import openai
 import random
 import textstat
 import re
-
 openai.api_key = st.secrets["OPENAI_API_KEY"]
-
 if "human_output" not in st.session_state:
     st.session_state.human_output = ""
 if "previous_inputs" not in st.session_state:
     st.session_state.previous_inputs = {}
-
 if "last_input_text" not in st.session_state:
     st.session_state.last_input_text = ""
-
 # === HUMANIZER v4.2.1 — Precision Student Mode ===
 PROMPT = (
     "Rewrite the following academic content like a real student would:"
@@ -58,7 +34,6 @@ PROMPT = (
     " Do not over-smooth. Let it feel like real writing."
     " Do not add new facts. Preserve all in-text citations and formatting."
 )
-
 SYNONYMS = {
     "utilize": "use",
     "therefore": "so",
@@ -71,12 +46,10 @@ SYNONYMS = {
     "significant": "big",
     "furthermore": "also"
 }
-
 def downgrade_vocab(text):
     for word, simple in SYNONYMS.items():
         text = re.sub(rf'\b{word}\b', simple, text, flags=re.IGNORECASE)
     return text
-
 def paragraph_balancer(text):
     paragraphs = text.split('\n')
     balanced = []
@@ -98,7 +71,6 @@ def paragraph_balancer(text):
                 buffer.append(combined)
         balanced.append(" ".join(buffer))
     return "\n\n".join(balanced)
-
 def insert_redundancy(text):
     lines = re.split(r'(?<=[.!?])\s+', text)
     output = []
@@ -107,7 +79,6 @@ def insert_redundancy(text):
         if random.random() < 0.15 and len(line.split()) > 6:
             output.append(f"This shows that {line.strip().split()[0].lower()} is important.")
     return " ".join(output)
-
 def inject_choppy_fragments(text):
     additions = ["This matters.", "That’s significant.", "It’s worth noting.", "Don’t ignore this.", "Key point.",
     "Still.", "Even then.", "That said.", "On the other hand.", "Then again.",
@@ -121,15 +92,12 @@ def inject_choppy_fragments(text):
         if random.random() < 0.18:
             result.append(random.choice(additions))
     return " ".join(result)
-
 def humanize_text(text):
     simplified = downgrade_vocab(text)
     structured = paragraph_balancer(simplified)
     echoed = insert_redundancy(structured)
     chopped = inject_choppy_fragments(echoed)
-
     full_prompt = f"{PROMPT}\n\n{chopped}\n\nRewrite this with the tone and structure described above."
-
     response = openai.chat.completions.create(
         model="gpt-4o",
         messages=[
@@ -139,14 +107,10 @@ def humanize_text(text):
         temperature=0.85,
         max_tokens=1600
     )
-
     result = response.choices[0].message.content.strip()
     return result
-
 # === UI (v4.4 layout with v4.5 label) ===
-
 ', unsafe_allow_html=True)
-
 st.markdown("""
 <script>
 function setCookie(name, value, days) {
@@ -158,7 +122,6 @@ function setCookie(name, value, days) {
     }
     document.cookie = name + "=" + (value || "")  + expires + "; path=/";
 }
-
 function getCookie(name) {
     var nameEQ = name + "=";
     var ca = document.cookie.split(';');
@@ -169,7 +132,6 @@ function getCookie(name) {
     }
     return null;
 }
-
 function updateCookieField() {
     var existing = getCookie("words_used");
     if (existing === null) {
@@ -182,47 +144,32 @@ updateCookieField();
 </script>
 <input type="hidden" id="cookieReader">""", unsafe_allow_html=True)
 cookie_read = st.text_input("Hidden Cookie", key="cookieReader", label_visibility="collapsed")
-
 # === Safe Initialization of Session State ===
 cookie_val = 0
 try:
     cookie_val = int(cookie_read.split("words_used=")[-1].split(";")[0])
 except:
     pass
-
 if "total_words_used" not in st.session_state:
     st.session_state["total_words_used"] = cookie_val
-
-
 input_text = st.text_area("Paste your AI-generated academic text below (Max: 10,000 characters):", height=280, max_chars=10000)
-
 if len(input_text) > 10000:
     st.warning("⚠️ Your input is over 10,000 characters. Only the first 10,000 characters will be used.")
 st.markdown(f"**{len(input_text.split())} Words, {len(input_text)} Characters**")
-
-
 # === Persistent Word Limit Restriction ===
 access_level = st.query_params.get("access", "free")
 new_word_count = len(input_text.split())
-
 if access_level != "pro":
     total = st.session_state.total_words_used + new_word_count
     if total > 700:
         st.error("🚫 Free trial limit reached: You’ve used 1,500 words. To unlock unlimited access, please pay and visit the pro link.")
         st.stop()
-
-
-
-
 # === Initialize total_words_used from cookie ===
 if "total_words_used" not in st.session_state:
     try:
         st.session_state.total_words_used = int(cookie_read.split("words_used=")[-1].split(";")[0])
     except:
         st.session_state.total_words_used = 0
-
-
-
 # === Ensure session state key exists ===
 if "total_words_used" not in st.session_state:
     cookie_val = 0
@@ -231,8 +178,6 @@ if "total_words_used" not in st.session_state:
     except:
         pass
     st.session_state["total_words_used"] = cookie_val
-
-
 # === Enforce 1000-word persistent limit using cookie value ===
 access_level = st.query_params.get("access", "free")
 used = 0
@@ -240,12 +185,9 @@ try:
     used = int(cookie_read.split("words_used=")[-1].split(";")[0])
 except:
     pass
-
 if access_level != "pro" and used >= 1000:
     st.error("🚫 Trial limit reached. You’ve used 1,000 words. To unlock unlimited access, please pay and use the pro link.")
     st.stop()
-
-
 if st.button("🔁 Humanize / Re-Humanize Text"):
     if input_text.strip():
         trimmed_input = input_text[:10000]
@@ -261,23 +203,17 @@ if st.button("🔁 Humanize / Re-Humanize Text"):
                 document.getElementById("cookieReader").value = updated;
                 </script>
             """, unsafe_allow_html=True)
-
             st.session_state.total_words_used += len(trimmed_input.split())
-                        
     else:
         st.warning("Please enter some text first.")
-
 if st.session_state.human_output:
     st.markdown("### ✍️ Humanized Output")
     edited_output = st.text_area("Edit your result below:", value=st.session_state.human_output, height=300)
     st.session_state.human_output = edited_output
-
     words = len(edited_output.split())
     score = round(textstat.flesch_reading_ease(edited_output), 1)
     st.markdown(f"**📊 Output Word Count:** {words} &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; **🧠 Readability Score:** {score}%")
-
     st.download_button("💾 Download Output", data=edited_output, file_name="humanized_output.txt", mime="text/plain")
-
 st.markdown("**Version 4.5**")
 st.markdown("---")
 st.markdown("""
@@ -297,7 +233,6 @@ st.markdown("""
         The tone mimics thoughtful effort, not perfect computation.
     </div>
 </div>
-
 <div class='features-grid'>
     <div class='comment'>
         <em>"This actually sounds like I wrote it after a long study night."</em><br><strong>- Joseph</strong>
