@@ -1,6 +1,6 @@
 
 st.markdown("""
-<div class="centered-container">
+<div class='centered-container'>
     <h1>🤖 InfiniAi-Humanizer</h1>
     <p>Turn robotic AI text into real, natural, human-sounding writing.</p>
 </div>
@@ -10,6 +10,10 @@ st.markdown("""
     </span>
 </div>
 """, unsafe_allow_html=True)
+
+
+
+
 
 
 
