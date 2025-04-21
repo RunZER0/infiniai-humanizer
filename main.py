@@ -136,10 +136,10 @@ st.markdown(f"**{len(input_text.split())} Words, {len(input_text)} Characters**"
 
 
     # Enforce 700-word trial limit
-    current_count = len(input_text.split())
-    if st.session_state.total_words_used + current_count > 700:
-        st.error("🚫 Trial limit reached: You’ve used your 700-word quota. Please upgrade to Pro for unlimited access.")
-        st.stop()
+current_count = len(input_text.split())
+if st.session_state.total_words_used + current_count > 700:
+    st.error("🚫 Trial limit reached: You’ve used your 700-word quota. Please upgrade to Pro for unlimited access.")
+    st.stop()
 
 if st.button("🔁 Humanize / Re-Humanize Text"):
     if input_text.strip():
