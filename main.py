@@ -124,6 +124,28 @@ textarea { background-color: #121212 !important; color: #ffffff !important; bord
 
 st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Turn robotic AI text into real, natural, human-sounding writing.</p></div>', unsafe_allow_html=True)
 
+
+# === Word Package Selection ===
+st.markdown("### 📦 Select Your Word Package")
+words = st.slider("Choose your desired package size (in words):", min_value=100, max_value=100000, step=100)
+price = round((words * 0.00045), 2)
+st.markdown(f"**Estimated Price:** ${price:.2f}")
+
+if st.button("💰 Proceed to Pay with MPESA"):
+    st.markdown("""
+    ### 🔐 How to Pay with MPESA (Send Money)
+
+    - Open your MPESA menu on your phone.
+    - Select **Send Money**.
+    - Enter **0795191421** as the number.
+    - Send **Ksh {price:.2f}** for **{words} words**.
+    - Use your name as the reference.
+    - After payment, wait for confirmation and refresh the page.
+
+    **Once payment is verified, full access will be granted.**
+    """, unsafe_allow_html=True)
+
+
 input_text = st.text_area("Paste your AI-generated academic text below (Max: 10,000 characters):", height=280, max_chars=10000)
 
 if len(input_text) > 10000:
