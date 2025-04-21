@@ -73,7 +73,11 @@ def insert_redundancy(text):
     return " ".join(output)
 
 def inject_choppy_fragments(text):
-    additions = ["This matters.", "Big risk.", "Still.", "Not always.", "A serious problem.", "That’s the issue.", "Even that’s not enough."]
+    additions = ["This matters.", "That’s significant.", "It’s worth noting.", "Don’t ignore this.", "Key point.",
+    "Still.", "Even then.", "That said.", "On the other hand.", "Then again.",
+    "Not always.", "Could be debated.", "That’s one view.", "It’s not that simple.", "There’s more to it.",
+    "That’s the issue.", "Potential flaw.", "Risk worth considering.", "Could break under pressure.", "Weak point.",
+    "Makes sense in context.", "That explains it.", "Fits the pattern.", "Shows something deeper.", "Hard to ignore."]
     sentences = re.split(r'(?<=[.!?])\s+', text)
     result = []
     for s in sentences:
