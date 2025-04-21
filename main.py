@@ -162,7 +162,7 @@ st.markdown("""
     <div class='vertical-divider'></div>
     <div class='feature'>
         <strong>🔁 Structured Variance:</strong><br>
-        Paragraphs are well balanced bursts for human clarity.
+        Paragraphs are well balanced for human clarity.
     </div>
     <div class='vertical-divider'></div>
     <div class='feature'>
