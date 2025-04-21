@@ -1,3 +1,20 @@
+
+st.markdown(
+    """
+    <div class="centered-container">
+        <h1>🤖 InfiniAi-Humanizer</h1>
+        <p>Turn robotic AI text into real, natural, human-sounding writing.</p>
+    </div>
+    <div style='text-align: center; padding: 0.5rem;'>
+        <span style='color: red; font-weight: bold; font-size: 16px;'>
+        🚨 This is a trial version. You are limited to 700 total words. Upgrade to Pro for unlimited access.
+        </span>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+
 import streamlit as st
 import openai
 import random
@@ -109,26 +126,7 @@ def humanize_text(text):
     return result
 
 # === UI (v4.4 layout with v4.5 label) ===
-st.markdown("""
-<style>
-.stApp { background-color: #0d0d0d; color: #00ffff; font-family: 'Segoe UI', monospace; text-align: center; }
-textarea { background-color: #121212 !important; color: #ffffff !important; border: 1px solid #00ffff !important; border-radius: 8px !important; font-size: 16px !important; }
-.stButton > button { background-color: #00ffff; color: black; font-weight: bold; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; transition: all 0.3s ease-in-out; }
-.stButton > button:hover { background-color: #00cccc; transform: scale(1.03); }
-.stDownloadButton button { background-color: #00ffff; color: black; font-weight: bold; border-radius: 5px; }
-.centered-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.features-grid { display: flex; justify-content: space-around; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #00ffff; }
-.feature, .comment { width: 30%; text-align: left; font-size: 14px; }
-.vertical-divider { border-left: 1px solid #00ffff; height: 100%; margin: 0 1rem; }
-</style>
-""", unsafe_allow_html=True)
 
-st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Turn robotic AI text into real, natural, human-sounding writing.</p></div>
-
-st.markdown(
-    '<div style="text-align: center; padding: 0.5rem;"><span style="color: red; font-weight: bold; font-size: 16px;">🚨 This is a trial version. You are limited to 700 total words. Upgrade to Pro for unlimited access.</span></div>',
-    unsafe_allow_html=True
-)
 ', unsafe_allow_html=True)
 
 st.markdown("""
