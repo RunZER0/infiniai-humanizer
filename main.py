@@ -189,6 +189,17 @@ if "total_words_used" not in st.session_state:
         st.session_state.total_words_used = 0
 
 
+
+# === Ensure session state key exists ===
+if "total_words_used" not in st.session_state:
+    cookie_val = 0
+    try:
+        cookie_val = int(cookie_read.split("words_used=")[-1].split(";")[0])
+    except:
+        pass
+    st.session_state["total_words_used"] = cookie_val
+
+
 # === Enforce 1000-word persistent limit using cookie value ===
 access_level = st.query_params.get("access", "free")
 used = 0
