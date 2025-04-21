@@ -137,7 +137,7 @@ st.markdown(
 )
 
 # If user clicked the PAY button, show new page for payment
-query_params = st.experimental_get_query_params()
+query_params = st.query_params
 if 'pay' in query_params:
     st.markdown("### 📦 Select Your Word Package")
     words = st.slider("Choose your desired package size (in words):", min_value=100, max_value=100000, step=100)
@@ -160,7 +160,7 @@ if 'pay' in query_params:
     st.stop()
 
 
-st.markdown('<div class="centered-container"><h1>🤖 InfiniAi-Humanizer</h1><p>Turn robotic AI text into real, natural, human-sounding writing.</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="centered-container"><p>Turn robotic AI text into real, natural, human-sounding writing.</p></div>', unsafe_allow_html=True)
 
 input_text = st.text_area("Paste your AI-generated academic text below (Max: 10,000 characters):", height=280, max_chars=10000)
 
